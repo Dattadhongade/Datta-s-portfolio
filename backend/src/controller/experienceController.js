@@ -1,4 +1,4 @@
-const { getPortfolioData, savePortfolioData } = require('../config/db');
+const { getPortfolioData, savePortfolioData } = require('../models/portfolioModel');
 
 // GET all experiences
 exports.getExperiences = async (req, res) => {

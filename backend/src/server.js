@@ -9,6 +9,7 @@ const fs = require('fs');
 const { initDatabase } = require('./config/db');
 
 // Import Modular Routes
+const authRoutes = require('./routes/authRoutes');
 const portfolioRoutes = require('./routes/portfolioRoutes');
 const aboutRoutes = require('./routes/aboutRoutes');
 const projectsRoutes = require('./routes/projectsRoutes');
@@ -25,17 +26,38 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Middleware
+// Security & Standard Middleware
 app.use(cors({ origin: '*' }));
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Clean NoSQL Injection protection helper
+function sanitizeNoSQL(obj) {
+  if (obj && typeof obj === 'object') {
+    for (const key in obj) {
+      if (/^\$/.test(key)) {
+        delete obj[key];
+      } else {
+        sanitizeNoSQL(obj[key]);
+      }
+    }
+  }
+}
+
+// Sanitize user inputs against MongoDB Operator Injection
+app.use((req, res, next) => {
+  if (req.body) sanitizeNoSQL(req.body);
+  if (req.params) sanitizeNoSQL(req.params);
+  next();
+});
+
 // Static uploads serving
 app.use('/uploads', express.static(uploadDir));
 
 // Mount API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api', portfolioRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/projects', projectsRoutes);
@@ -43,9 +65,18 @@ app.use('/api/skills', skillsRoutes);
 app.use('/api/experience', experienceRoutes);
 app.use('/api', contactRoutes);
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled API Error:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
+  });
+});
+
 // Initialize database and start server
 initDatabase().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 Modular Portfolio Backend API Server is live at http://localhost:${PORT}`);
+    console.log(`🚀 Secure Portfolio Backend Server is live at http://localhost:${PORT}`);
   });
 });

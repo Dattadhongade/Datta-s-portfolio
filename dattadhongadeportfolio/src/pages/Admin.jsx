@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   User, 
@@ -36,10 +36,16 @@ import {
   Database,
   TestTube2,
   Wrench,
-  Search
+  Search,
+  LogOut,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2
 } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import TechIcon, { TECH_ICON_REGISTRY } from '../components/TechIcon';
+import AdminLogin from '../components/AdminLogin';
+import { api } from '../services';
 import heroDark from "../assets/hero.png";
 import heroLight from "../assets/hero.png";
 
@@ -113,9 +119,51 @@ export default function Admin() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [categoryEditInput, setCategoryEditInput] = useState('');
 
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminUser, setAdminUser] = useState(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
+  };
+
+  // Verify Admin JWT token session on component mount
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        const res = await api.get('/auth/me');
+        if (res.success && res.user) {
+          setIsAuthenticated(true);
+          setAdminUser(res.user);
+        } else {
+          localStorage.removeItem('admin_token');
+          setIsAuthenticated(false);
+        }
+      } catch (err) {
+        localStorage.removeItem('admin_token');
+        setIsAuthenticated(false);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    verifySession();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    setIsAuthenticated(false);
+    setAdminUser(null);
+    showToast('Logged out of Admin Control Panel successfully.');
   };
 
   // Local Form States
@@ -336,18 +384,127 @@ export default function Admin() {
     { id: 'backup', label: 'Backup & Reset', icon: <RotateCcw size={15} /> },
   ];
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin" />
+          <p className="text-sm font-mono text-slate-500 dark:text-slate-400 animate-pulse">
+            Verifying Admin Security Clearance...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <AdminLogin
+        onLoginSuccess={(user) => {
+          setIsAuthenticated(true);
+          setAdminUser(user);
+          showToast(`Welcome back, ${user.username || 'Admin'}!`);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300 pb-12">
       
-      {/* Toast Notification */}
+      {/* Center Floating Toast Notification */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border text-xs sm:text-sm font-bold animate-bounce ${
-          toast.type === 'error' ? 'bg-rose-500 text-white border-rose-600' : 'bg-emerald-600 text-white border-emerald-700'
-        }`}>
-          <CheckCircle size={16} />
-          <span>{toast.message}</span>
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] pointer-events-auto min-w-[320px] max-w-lg px-2 animate-in fade-in slide-in-from-top-6 duration-300">
+          {(() => {
+            const isError = toast.type === 'error';
+            const isWarning = toast.type === 'warning';
+            const isInfo = toast.type === 'info';
+
+            const styles = isError
+              ? 'bg-slate-900/95 text-rose-200 border-rose-500/50 shadow-[0_0_30px_rgba(244,63,94,0.3)]'
+              : isWarning
+              ? 'bg-slate-900/95 text-amber-200 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.3)]'
+              : isInfo
+              ? 'bg-slate-900/95 text-cyan-200 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.3)]'
+              : 'bg-slate-900/95 text-emerald-200 border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.3)]';
+
+            const Icon = isError
+              ? AlertCircle
+              : isWarning
+              ? AlertTriangle
+              : isInfo
+              ? Info
+              : CheckCircle2;
+
+            const iconColor = isError
+              ? 'text-rose-400'
+              : isWarning
+              ? 'text-amber-400'
+              : isInfo
+              ? 'text-cyan-400'
+              : 'text-emerald-400';
+
+            const badgeBg = isError
+              ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+              : isWarning
+              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+              : isInfo
+              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+              : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+
+            const label = isError ? 'ERROR' : isWarning ? 'WARNING' : isInfo ? 'NOTICE' : 'SUCCESS';
+
+            return (
+              <div className={`w-full px-4 py-3 rounded-2xl backdrop-blur-xl border flex items-center justify-between gap-3 text-sm font-semibold shadow-2xl ${styles}`}>
+                <div className="flex items-center gap-2.5">
+                  <Icon size={20} className={`shrink-0 ${iconColor}`} />
+                  <span className={`px-2 py-0.5 rounded-md border text-[10px] font-mono uppercase tracking-wider ${badgeBg}`}>
+                    {label}
+                  </span>
+                  <span className="text-slate-100 text-xs sm:text-sm font-medium">{toast.message}</span>
+                </div>
+                <button
+                  onClick={() => setToast(null)}
+                  className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  title="Dismiss notification"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            );
+          })()}
         </div>
       )}
+
+      {/* Admin Security Banner */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 text-white shadow-xl">
+        <div className="flex items-center gap-3.5">
+          <div className="p-2.5 rounded-xl bg-indigo-500/20 text-cyan-400 border border-indigo-500/30 shadow-inner">
+            <ShieldCheck size={24} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-base text-white tracking-tight">
+                Datta's Control Panel
+              </h3>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono uppercase tracking-wider">
+                Authenticated: {adminUser?.username || 'admin'}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              MongoDB Database Connection Active • 256-bit Token Encryption
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-all cursor-pointer shadow-xs hover:border-rose-500/50"
+        >
+          <LogOut size={15} />
+          <span>Log Out</span>
+        </button>
+      </div>
 
       {/* Responsive Navigation Tabs (Never overflows screen) */}
       <div className="p-1.5 rounded-2xl bg-slate-100/90 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-wrap gap-1.5 justify-start sm:justify-center">

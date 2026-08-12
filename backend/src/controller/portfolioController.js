@@ -1,4 +1,4 @@
-const { getPortfolioData, savePortfolioData, isDbConnected } = require('../config/db');
+const { getPortfolioData, savePortfolioData, isDbConnected } = require('../models/portfolioModel');
 
 exports.getHealth = (req, res) => {
   res.json({

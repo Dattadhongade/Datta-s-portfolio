@@ -1,4 +1,4 @@
-const { getPortfolioData, savePortfolioData, saveContactMessage } = require('../config/db');
+const { getPortfolioData, savePortfolioData, saveContactMessage } = require('../models/portfolioModel');
 
 // SEND contact inquiry
 exports.sendContact = async (req, res) => {
