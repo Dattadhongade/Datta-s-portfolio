@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+*.env
+
+# Uploads & User generated content
+uploads/
+
+# Zip and archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Logs
+logs/
+*.log
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
