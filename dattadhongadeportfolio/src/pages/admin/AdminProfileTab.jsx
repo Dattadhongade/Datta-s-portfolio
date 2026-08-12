@@ -7,6 +7,7 @@ export default function AdminProfileTab({
   profileForm,
   setProfileForm,
   handleSaveProfile,
+  updateProfile,
   uploadImage,
   setUploadingImage,
   showToast
@@ -44,8 +45,10 @@ export default function AdminProfileTab({
                 <button
                   type="button"
                   onClick={() => {
-                    setProfileForm((prev) => ({ ...prev, avatarLight: '' }));
-                    showToast('Light photo removed', 'warning');
+                    const updated = { ...profileForm, avatarLight: '' };
+                    setProfileForm(updated);
+                    if (updateProfile) updateProfile(updated);
+                    showToast('Light photo removed & saved', 'warning');
                   }}
                   className="text-[10px] text-rose-500 font-bold hover:underline cursor-pointer"
                 >
@@ -76,8 +79,10 @@ export default function AdminProfileTab({
                     showToast('Uploading light mode photo...', 'info');
                     try {
                       const url = await uploadImage(file);
-                      setProfileForm((prev) => ({ ...prev, avatarLight: url }));
-                      showToast('Light mode photo uploaded successfully!', 'success');
+                      const updated = { ...profileForm, avatarLight: url };
+                      setProfileForm(updated);
+                      if (updateProfile) updateProfile(updated);
+                      showToast('Light mode photo uploaded & saved!', 'success');
                     } catch (err) {
                       showToast('Upload failed', 'error');
                     } finally {
@@ -100,8 +105,10 @@ export default function AdminProfileTab({
                 <button
                   type="button"
                   onClick={() => {
-                    setProfileForm((prev) => ({ ...prev, avatarDark: '' }));
-                    showToast('Dark photo removed', 'warning');
+                    const updated = { ...profileForm, avatarDark: '' };
+                    setProfileForm(updated);
+                    if (updateProfile) updateProfile(updated);
+                    showToast('Dark photo removed & saved', 'warning');
                   }}
                   className="text-[10px] text-rose-500 font-bold hover:underline cursor-pointer"
                 >
@@ -132,8 +139,10 @@ export default function AdminProfileTab({
                     showToast('Uploading dark mode photo...', 'info');
                     try {
                       const url = await uploadImage(file);
-                      setProfileForm((prev) => ({ ...prev, avatarDark: url }));
-                      showToast('Dark mode photo uploaded successfully!', 'success');
+                      const updated = { ...profileForm, avatarDark: url };
+                      setProfileForm(updated);
+                      if (updateProfile) updateProfile(updated);
+                      showToast('Dark mode photo uploaded & saved!', 'success');
                     } catch (err) {
                       showToast('Upload failed', 'error');
                     } finally {
@@ -147,61 +156,59 @@ export default function AdminProfileTab({
         </div>
       </div>
 
+      {/* Main Identity Info */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1">
-          <label className="text-xs font-bold text-black dark:text-slate-300">Full Name</label>
+          <label className="text-xs font-bold text-black dark:text-slate-300">Full Display Name</label>
           <input
             type="text"
             value={profileForm.name || ''}
             onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-black dark:text-white text-xs sm:text-sm font-medium focus:outline-none focus:border-cyan-500"
-            required
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-bold text-black dark:text-slate-300">Professional Role / Title</label>
+          <label className="text-xs font-bold text-black dark:text-slate-300">Professional Headline / Role</label>
           <input
             type="text"
             value={profileForm.role || ''}
             onChange={(e) => setProfileForm({ ...profileForm, role: e.target.value })}
             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-black dark:text-white text-xs sm:text-sm font-medium focus:outline-none focus:border-cyan-500"
-            required
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-bold text-black dark:text-slate-300">Location</label>
+          <label className="text-xs font-bold text-black dark:text-slate-300">Primary Location</label>
           <input
             type="text"
-            value={profileForm.location || ""}
+            value={profileForm.location || ''}
             onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-black dark:text-white text-xs sm:text-sm font-medium focus:outline-none focus:border-cyan-500"
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-bold text-black dark:text-slate-300">Email Address</label>
+          <label className="text-xs font-bold text-black dark:text-slate-300">Contact Email</label>
           <input
             type="email"
-            value={profileForm.email || ""}
+            value={profileForm.email || ''}
             onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-            placeholder="dattadhongade@gmail.com"
             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-black dark:text-white text-xs sm:text-sm font-medium focus:outline-none focus:border-cyan-500"
           />
         </div>
 
-        <div className="space-y-1 col-span-1 sm:col-span-2">
+        <div className="space-y-2 col-span-1 sm:col-span-2">
           <label className="text-xs font-bold text-black dark:text-slate-300 flex items-center gap-1.5">
             <FileText size={13} className="text-cyan-600 dark:text-cyan-400" />
-            Resume PDF — Upload File or Paste URL
+            Resume PDF — Upload File
           </label>
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-3">
             {/* File Upload */}
             <div className="flex items-center gap-3 flex-wrap">
               <label className="px-3.5 py-2 rounded-xl bg-linear-to-r from-cyan-600 to-indigo-600 text-white text-xs font-bold cursor-pointer transition-colors inline-flex items-center gap-1.5 shadow-sm">
                 <Upload size={13} />
-                <span>Upload Resume PDF</span>
+                <span>{profileForm.resumeDownloadUrl && profileForm.resumeDownloadUrl !== '#download' ? 'Replace Resume PDF' : 'Upload Resume PDF'}</span>
                 <input
                   type="file"
                   accept="application/pdf"
@@ -213,8 +220,10 @@ export default function AdminProfileTab({
                     showToast('Uploading resume PDF...', 'info');
                     try {
                       const url = await uploadImage(file);
-                      setProfileForm((prev) => ({ ...prev, resumeDownloadUrl: url }));
-                      showToast('Resume PDF uploaded successfully!', 'success');
+                      const updated = { ...profileForm, resumeDownloadUrl: url };
+                      setProfileForm(updated);
+                      if (updateProfile) updateProfile(updated);
+                      showToast('Resume PDF uploaded & saved successfully!', 'success');
                     } catch (err) {
                       showToast('PDF upload failed', 'error');
                     } finally {
@@ -234,17 +243,9 @@ export default function AdminProfileTab({
                 </a>
               )}
             </div>
-            {/* Manual URL field */}
-            <div className="space-y-1">
-              <label className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Or paste a direct URL:</label>
-              <input
-                type="text"
-                placeholder="https://drive.google.com/your-resume.pdf"
-                value={profileForm.resumeDownloadUrl || ''}
-                onChange={(e) => setProfileForm({ ...profileForm, resumeDownloadUrl: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 text-black dark:text-white text-xs font-medium focus:outline-none focus:border-cyan-500"
-              />
-            </div>
+            {profileForm.resumeDownloadUrl && profileForm.resumeDownloadUrl !== '#download' && (
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">✓ Resume PDF uploaded and ready for viewing</p>
+            )}
           </div>
         </div>
       </div>

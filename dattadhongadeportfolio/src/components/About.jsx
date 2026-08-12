@@ -46,7 +46,17 @@ const About = () => {
   const { profile, stats, capabilities, lifestyle } = usePortfolio();
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-8 animate-page-entrance">
+    <div className="w-full max-w-5xl mx-auto space-y-4 animate-page-entrance">
+      {/* Centered Top Badge */}
+      {/* <div className="flex justify-center w-full">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-xs font-bold shadow-xs">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span>Basic info about me.</span>
+        </div>
+      </div> */}
 
       {/* Clean Description Banner - Glass Panel with subtle hover elevation */}
       <section className="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden transition-all duration-300 hover:shadow-lg">

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Zap, Plus, Edit2, Trash2, Check, X, Shield, Heart } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 export default function AdminCapabilitiesTab({
   stats,
@@ -14,12 +15,15 @@ export default function AdminCapabilitiesTab({
   deleteStat,
   capabilities,
   addCapability,
+  updateCapability,
   deleteCapability,
   lifestyle,
   addLifestyle,
   deleteLifestyle,
   showToast
 }) {
+  const [editingCap, setEditingCap] = useState(null);
+
   return (
     <div className="space-y-6">
 
@@ -139,26 +143,36 @@ export default function AdminCapabilitiesTab({
 
       {/* Capabilities List */}
       <div className="glass-card rounded-2xl p-6 border border-slate-200/80 dark:border-white/10 space-y-4">
-        <h3 className="fluid-h3 font-semibold text-black dark:text-white flex items-center gap-2">
-          <Shield size={18} className="text-cyan-600 dark:text-cyan-400" />
-          <span>Core Engineering Capabilities ({capabilities.length})</span>
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="fluid-h3 font-semibold text-black dark:text-white flex items-center gap-2">
+            <Shield size={18} className="text-cyan-600 dark:text-cyan-400" />
+            <span>Core Engineering Capabilities ({capabilities.length})</span>
+          </h3>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {capabilities.map((cap) => (
             <div key={cap.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border space-y-2 relative group">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-2">
                 <h4 className="text-sm font-bold text-black dark:text-white">{cap.title}</h4>
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Delete capability "${cap.title}"?`)) {
-                      deleteCapability(cap.id);
-                      showToast('Capability deleted', 'warning');
-                    }
-                  }}
-                  className="p-1 text-slate-400 hover:text-rose-500 cursor-pointer"
-                >
-                  <Trash2 size={13} />
-                </button>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <button
+                    onClick={() => setEditingCap({ ...cap })}
+                    className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-500 hover:bg-cyan-500/20 cursor-pointer"
+                  >
+                    <Edit2 size={13} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Delete capability "${cap.title}"?`)) {
+                        deleteCapability(cap.id);
+                        showToast('Capability deleted', 'warning');
+                      }
+                    }}
+                    className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 cursor-pointer"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
               <p className="text-xs text-cyan-600 dark:text-cyan-400 font-semibold">{cap.tagline}</p>
               <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{cap.description}</p>
@@ -166,6 +180,76 @@ export default function AdminCapabilitiesTab({
           ))}
         </div>
       </div>
+
+      {/* Edit Capability Modal */}
+      {editingCap && createPortal(
+        <div className="fixed inset-0 z-9999 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="glass-card rounded-2xl p-6 max-w-lg w-full border border-cyan-500/30 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
+              <h3 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
+                <Edit2 size={16} className="text-cyan-500" />
+                Edit Capability
+              </h3>
+              <button onClick={() => setEditingCap(null)} className="text-slate-400 hover:text-white cursor-pointer"><X size={18} /></button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold mb-1 text-slate-500 dark:text-slate-400">Title</label>
+                <input
+                  type="text"
+                  value={editingCap.title}
+                  onChange={(e) => setEditingCap({ ...editingCap, title: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-sm font-bold text-black dark:text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold mb-1 text-slate-500 dark:text-slate-400">Tagline</label>
+                <input
+                  type="text"
+                  value={editingCap.tagline}
+                  onChange={(e) => setEditingCap({ ...editingCap, tagline: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-sm text-black dark:text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold mb-1 text-slate-500 dark:text-slate-400">Description</label>
+                <textarea
+                  rows={3}
+                  value={editingCap.description}
+                  onChange={(e) => setEditingCap({ ...editingCap, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-sm text-black dark:text-white focus:outline-none focus:border-cyan-500 resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => setEditingCap(null)}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (updateCapability) {
+                    updateCapability(editingCap.id, editingCap);
+                  } else {
+                    // Fallback: delete old + add new if no updateCapability
+                    deleteCapability(editingCap.id);
+                    addCapability(editingCap);
+                  }
+                  setEditingCap(null);
+                  showToast('Capability updated!', 'success');
+                }}
+                className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold cursor-pointer"
+              >
+                <Check size={14} className="inline mr-1" />
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

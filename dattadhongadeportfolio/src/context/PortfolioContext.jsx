@@ -345,21 +345,11 @@ const initialDefaultData = {
 };
 
 export const PortfolioProvider = ({ children }) => {
-  const [data, setData] = useState(() => {
-    try {
-      const saved = localStorage.getItem("portfolio_master_data_v3");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error("Failed to load local portfolio data", e);
-    }
-    return initialDefaultData;
-  });
-
+  const [data, setData] = useState(initialDefaultData);
   const [backendConnected, setBackendConnected] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Fetch initial data from backend API on mount
+  // Fetch initial data from backend API on mount — backend ALWAYS wins over localStorage
   useEffect(() => {
     const fetchBackendData = async () => {
       try {
@@ -367,34 +357,67 @@ export const PortfolioProvider = ({ children }) => {
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data && Object.keys(json.data).length > 0) {
-            setData((prev) => ({
+            const backendData = json.data;
+
+            // Normalize skills: if any category values are strings/corrupt, fall back to initialDefaultData skills
+            let skills = backendData.skills || {};
+            const hasValidSkills = Object.values(skills).some(v => Array.isArray(v) && v.length > 0);
+            if (!hasValidSkills) {
+              skills = initialDefaultData.skills;
+            }
+
+            setData({
               ...initialDefaultData,
-              ...json.data,
-              educations: json.data.educations || prev.educations || initialDefaultData.educations
-            }));
+              ...backendData,
+              skills,
+              educations: (backendData.educations?.length > 0) ? backendData.educations : initialDefaultData.educations,
+              experiences: (backendData.experiences?.length > 0) ? backendData.experiences : initialDefaultData.experiences,
+            });
             setBackendConnected(true);
+            // Clear stale localStorage so we always use fresh backend data
+            localStorage.removeItem('portfolio_master_data_v3');
           }
+        } else {
+          // Backend failed — try localStorage fallback
+          try {
+            const saved = localStorage.getItem('portfolio_master_data_v3');
+            if (saved) setData(JSON.parse(saved));
+          } catch (e) { /* ignore */ }
         }
       } catch (err) {
-        console.warn("Backend API not reachable, running in offline/localStorage mode", err);
+        console.warn('Backend API not reachable, running in offline/localStorage mode', err);
+        try {
+          const saved = localStorage.getItem('portfolio_master_data_v3');
+          if (saved) setData(JSON.parse(saved));
+        } catch (e) { /* ignore */ }
+      } finally {
+        setDataLoaded(true);
       }
     };
     fetchBackendData();
   }, []);
 
-  // Sync state changes with localStorage and Backend API
+  // Sync state changes with localStorage and Backend API (only after initial backend data has loaded)
   useEffect(() => {
+    if (!dataLoaded) return;
+
     try {
       localStorage.setItem("portfolio_master_data_v3", JSON.stringify(data));
     } catch (e) {
       console.error("Failed to save portfolio data to localStorage", e);
     }
 
+    const token = localStorage.getItem('admin_token');
+    if (!token) return;
+
     // Debounced sync to backend API
     const timeout = setTimeout(() => {
       fetch(`${API_BASE_URL}/portfolio`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(data)
       })
       .then(res => {
@@ -403,18 +426,25 @@ export const PortfolioProvider = ({ children }) => {
         }
       })
       .catch(() => setBackendConnected(prev => !prev ? prev : false));
-    }, 1000);
+    }, 800);
 
     return () => clearTimeout(timeout);
-  }, [data]);
+  }, [data, dataLoaded]);
 
   // Image Upload Method (Direct File -> Multipart or Base64 fallback)
   const uploadImage = async (file) => {
     try {
+      const token = localStorage.getItem('admin_token');
       const formData = new FormData();
       formData.append('image', file);
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch(`${API_BASE_URL}/upload`, {
         method: 'POST',
+        headers,
         body: formData
       });
       if (res.ok) {
@@ -478,7 +508,35 @@ export const PortfolioProvider = ({ children }) => {
 
   // 1. Profile methods
   const updateProfile = (newProfile) => {
-    setData((prev) => ({ ...prev, profile: { ...prev.profile, ...newProfile } }));
+    setData((prev) => {
+      const updatedProfile = { ...prev.profile, ...newProfile };
+      const updated = {
+        ...prev,
+        profile: updatedProfile
+      };
+
+      try {
+        localStorage.setItem("portfolio_master_data_v3", JSON.stringify(updated));
+      } catch (e) {}
+
+      const token = localStorage.getItem('admin_token');
+      if (token) {
+        fetch(`${API_BASE_URL}/portfolio`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updated)
+        })
+        .then(res => {
+          if (res.ok) setBackendConnected(true);
+        })
+        .catch(err => console.error("Profile sync failed:", err));
+      }
+
+      return updated;
+    });
   };
 
   // 2. Stats methods
@@ -531,6 +589,13 @@ export const PortfolioProvider = ({ children }) => {
     setData((prev) => ({
       ...prev,
       capabilities: prev.capabilities.filter((c) => c.id !== id)
+    }));
+  };
+
+  const updateCapability = (id, updated) => {
+    setData((prev) => ({
+      ...prev,
+      capabilities: prev.capabilities.map((c) => (c.id === id ? { ...c, ...updated } : c))
     }));
   };
 
@@ -739,6 +804,13 @@ export const PortfolioProvider = ({ children }) => {
     }));
   };
 
+  const updateExperience = (id, updated) => {
+    setData((prev) => ({
+      ...prev,
+      experiences: prev.experiences.map((e) => (e.id === id ? { ...e, ...updated } : e))
+    }));
+  };
+
   const addRoleToExperience = (companyId, role) => {
     setData((prev) => ({
       ...prev,
@@ -777,6 +849,15 @@ export const PortfolioProvider = ({ children }) => {
     }));
   };
 
+  const updateMessageRemark = (id, remark) => {
+    setData((prev) => ({
+      ...prev,
+      messages: prev.messages.map((m) =>
+        m.id === id ? { ...m, remark, unread: remark === 'New' ? m.unread : false } : m
+      )
+    }));
+  };
+
   const deleteMessage = (id) => {
     setData((prev) => ({
       ...prev,
@@ -802,6 +883,7 @@ export const PortfolioProvider = ({ children }) => {
     addTechPill,
     deleteTechPill,
     addCapability,
+    updateCapability,
     deleteCapability,
     addLifestyle,
     deleteLifestyle,
@@ -822,9 +904,11 @@ export const PortfolioProvider = ({ children }) => {
     deleteCertification,
     addExperience,
     deleteExperience,
+    updateExperience,
     addRoleToExperience,
     deleteRoleFromExperience,
     markMessageRead,
+    updateMessageRemark,
     deleteMessage,
     resetToDefaults
   }), [data, backendConnected]);

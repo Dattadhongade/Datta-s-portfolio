@@ -6,15 +6,18 @@ export const Experience = () => {
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 animate-in fade-in duration-500">
-
+      {/* Centered Top Badge */}
+      <div className="flex justify-center w-full">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-xs font-bold shadow-xs">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span>Total Work Experience: 0.7 Years (including internship)</span>
+        </div>
+      </div>
       {/* Card container with bg — compact padding on mobile */}
       <div className="glass-card rounded-2xl p-4 sm:p-8 border border-slate-200/80 dark:border-white/10">
-
-        {/* Subtitle */}
-        <p className="fluid-xs text-slate-500 dark:text-slate-400 font-medium mb-4 sm:mb-6 italic">
-          Hands-on software engineering experience in enterprise and project environments
-        </p>
-
         {/* Single vertical timeline with 100% dead-centered dots and zero text overlap */}
         <div className="relative pl-7 sm:pl-9">
           {/* One vertical line */}

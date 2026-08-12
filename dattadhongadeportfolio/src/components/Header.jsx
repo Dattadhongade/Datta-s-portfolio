@@ -1,8 +1,9 @@
-import { Link, useLocation } from "react-router-dom";
-import { Menu, User, FileText, Briefcase, Award, Shield, Send } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, User, FileText, Briefcase, Award, Shield, Send, LogOut } from "lucide-react";
 
 export default function Header({ setIsSidebarOpen }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Determine the title & icon based on current route
   const getHeaderInfo = () => {
@@ -39,11 +40,21 @@ export default function Header({ setIsSidebarOpen }) {
   ];
 
   const headerInfo = getHeaderInfo();
-  const isAdminRoute = location.pathname === "/datta's_control_panel" || location.pathname === "/dattas_control_panel" || location.pathname === "/admin";
+  const isAdminRoute =
+    location.pathname === "/datta's_control_panel" ||
+    location.pathname === "/dattas_control_panel" ||
+    location.pathname === "/admin";
+
+  const handleLogout = () => {
+    localStorage.removeItem("admin_token");
+    navigate("/");
+    // Reload to reset Admin auth state
+    window.location.reload();
+  };
 
   return (
     <header className="flex flex-col lg:flex-row justify-between items-center pb-3.5 mb-5 border-b border-slate-200/80 dark:border-white/5 w-full gap-3.5 relative">
-      {/* Left / Center side: Hamburger button (Mobile & iPad) + Clean Title */}
+      {/* Left side: Hamburger (mobile) + Page title */}
       <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
         <button
           className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-black dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-all cursor-pointer shrink-0"
@@ -66,11 +77,30 @@ export default function Header({ setIsSidebarOpen }) {
         </div>
 
         {/* Spacer on mobile to keep title centered when hamburger is on left */}
-        <div className="w-9 lg:hidden" />
+        {!isAdminRoute && <div className="w-9 lg:hidden" />}
+
+        {/* Logout button inline on mobile (admin only) */}
+        {isAdminRoute && (
+          <button
+            onClick={handleLogout}
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-xs font-semibold transition-all cursor-pointer shrink-0"
+          >
+            <LogOut size={14} />
+            <span>Log Out</span>
+          </button>
+        )}
       </div>
 
-      {/* Center / Right side: Centered Navigation Tabs - Smooth Horizontal Scroll on Mobile */}
-      {!isAdminRoute && (
+      {/* Right side: nav tabs OR logout button */}
+      {isAdminRoute ? (
+        <button
+          onClick={handleLogout}
+          className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-sm font-semibold transition-all cursor-pointer shadow-xs hover:border-rose-500/40"
+        >
+          <LogOut size={15} />
+          <span>Log Out</span>
+        </button>
+      ) : (
         <nav className="w-full lg:w-auto overflow-x-auto no-scrollbar py-0.5 max-w-full min-w-0 flex justify-start sm:justify-center">
           <ul className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-xl sm:rounded-2xl bg-slate-100/90 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shrink-0">
             {navItems.map((item) => {
@@ -96,7 +126,3 @@ export default function Header({ setIsSidebarOpen }) {
     </header>
   );
 }
-
-
-
-

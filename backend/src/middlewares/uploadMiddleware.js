@@ -21,16 +21,16 @@ const storage = multer.diskStorage({
   }
 });
 
-// File Filter: Accept images only
+// File Filter: Accept images and PDF documents
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp|gif|svg/;
+  const allowedTypes = /jpeg|jpg|png|webp|gif|svg|pdf/;
   const extValid = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimeValid = allowedTypes.test(file.mimetype);
+  const mimeValid = /jpeg|jpg|png|webp|gif|svg|pdf/.test(file.mimetype) || file.mimetype === 'application/pdf';
 
   if (extValid && mimeValid) {
     return cb(null, true);
   }
-  cb(new Error('Only image files (JPEG, PNG, WEBP, GIF, SVG) are allowed!'));
+  cb(new Error('Only images (JPEG, PNG, WEBP, GIF, SVG) and PDF documents are allowed!'));
 };
 
 const upload = multer({

@@ -49,18 +49,45 @@ const Qualifications = () => {
                   )}
                 </div>
 
-                {/* ── SUB POINT: Institution & Duration ── */}
+                {/* ── SUB POINT: Institution, Location & Duration ── */}
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 text-xs sm:text-sm mb-1.5">
-                  <span className="font-bold text-cyan-700 dark:text-cyan-400">{edu.institution}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-cyan-700 dark:text-cyan-400">{edu.college || edu.institution}</span>
+                    {edu.location && (
+                      <span className="text-slate-400 text-xs font-normal">• {edu.location}</span>
+                    )}
+                  </div>
                   <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">{edu.duration}</span>
                 </div>
 
-                {/* Description — muted body text */}
+                {/* Description — body text */}
                 {edu.description && (
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-2">
                     {edu.description}
                   </p>
                 )}
+
+                {/* Highlights List */}
+                {(() => {
+                  const highlightsList = Array.isArray(edu.highlights)
+                    ? edu.highlights
+                    : typeof edu.highlights === 'string' && edu.highlights.trim()
+                    ? edu.highlights.split('\n').map((h) => h.trim()).filter(Boolean)
+                    : [];
+
+                  if (highlightsList.length === 0) return null;
+
+                  return (
+                    <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-400 pl-1 mt-1.5">
+                      {highlightsList.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
+                          <span className="text-cyan-500 font-bold mt-0.5">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                })()}
 
               </div>
             ))}

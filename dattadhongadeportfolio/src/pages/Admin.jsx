@@ -24,7 +24,6 @@ import AdminLogin from '../components/AdminLogin';
 import { api } from '../services';
 
 import AdminToast from './admin/AdminToast';
-import AdminHeader from './admin/AdminHeader';
 import AdminProfileTab from './admin/AdminProfileTab';
 import AdminSocialTab from './admin/AdminSocialTab';
 import AdminProjectsTab from './admin/AdminProjectsTab';
@@ -33,7 +32,6 @@ import AdminAcademicsTab from './admin/AdminAcademicsTab';
 import AdminCapabilitiesTab from './admin/AdminCapabilitiesTab';
 import AdminExperienceTab from './admin/AdminExperienceTab';
 import AdminMessagesTab from './admin/AdminMessagesTab';
-import AdminBackupTab from './admin/AdminBackupTab';
 
 export default function Admin() {
   const {
@@ -45,6 +43,7 @@ export default function Admin() {
     deleteStat,
     capabilities,
     addCapability,
+    updateCapability,
     deleteCapability,
     lifestyle,
     addLifestyle,
@@ -72,9 +71,11 @@ export default function Admin() {
     deleteCertification,
     experiences,
     addExperience,
+    updateExperience,
     deleteExperience,
     messages,
     markMessageRead,
+    updateMessageRemark,
     deleteMessage,
     resetToDefaults,
     uploadImage
@@ -90,7 +91,6 @@ export default function Admin() {
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
   };
 
   // Verify Admin JWT token session on component mount
@@ -134,6 +134,17 @@ export default function Admin() {
   // 1. Profile
   const [profileForm, setProfileForm] = useState({ ...profile });
 
+  // Sync profileForm whenever backend profile data loads/changes
+  useEffect(() => {
+    if (profile && Object.keys(profile).length > 0) {
+      setProfileForm((prev) => ({
+        ...prev,
+        ...profile,
+        socialLinks: profile.socialLinks || prev.socialLinks || []
+      }));
+    }
+  }, [profile]);
+
   // 2. Project Add & Edit Modals
   const [showAddProject, setShowAddProject] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
@@ -159,10 +170,13 @@ export default function Admin() {
   const [editingEdu, setEditingEdu] = useState(null);
   const [newEdu, setNewEdu] = useState({
     degree: '',
+    college: '',
     institution: '',
     duration: '',
+    location: '',
     cgpa: '',
-    description: ''
+    description: '',
+    highlights: ''
   });
 
   // 4. Skills
@@ -280,20 +294,52 @@ export default function Admin() {
 
   const handleAddEducation = (e) => {
     e.preventDefault();
-    if (!newEdu.degree.trim() || !newEdu.institution.trim()) {
-      showToast('Degree and Institution are required', 'error');
+    if (!newEdu.degree?.trim() || !(newEdu.college || newEdu.institution)?.trim()) {
+      showToast('Degree and College / Institution are required', 'error');
       return;
     }
-    addEducation(newEdu);
-    setNewEdu({ degree: '', institution: '', duration: '', cgpa: '', description: '' });
+    const collegeName = (newEdu.college || newEdu.institution || '').trim();
+    const highlightsArray = typeof newEdu.highlights === 'string'
+      ? newEdu.highlights.split('\n').map((h) => h.trim()).filter(Boolean)
+      : (Array.isArray(newEdu.highlights) ? newEdu.highlights : []);
+
+    addEducation({
+      ...newEdu,
+      degree: newEdu.degree.trim(),
+      college: collegeName,
+      institution: collegeName,
+      location: newEdu.location || 'Nashik, India',
+      duration: newEdu.duration || '2022 - 2024',
+      cgpa: newEdu.cgpa || '',
+      description: newEdu.description || '',
+      highlights: highlightsArray
+    });
+
+    setNewEdu({ degree: '', college: '', institution: '', duration: '', location: '', cgpa: '', description: '', highlights: '' });
     setShowAddEdu(false);
     showToast('New education entry added!');
   };
 
   const handleSaveEditEdu = (e) => {
     e.preventDefault();
-    if (!editingEdu || !editingEdu.degree.trim()) return;
-    updateEducation(editingEdu.id, editingEdu);
+    if (!editingEdu || !editingEdu.degree?.trim()) return;
+    const collegeName = (editingEdu.college || editingEdu.institution || '').trim();
+    const highlightsArray = typeof editingEdu.highlights === 'string'
+      ? editingEdu.highlights.split('\n').map((h) => h.trim()).filter(Boolean)
+      : (Array.isArray(editingEdu.highlights) ? editingEdu.highlights : []);
+
+    updateEducation(editingEdu.id, {
+      ...editingEdu,
+      degree: editingEdu.degree.trim(),
+      college: collegeName,
+      institution: collegeName,
+      location: editingEdu.location || 'Nashik, India',
+      duration: editingEdu.duration || '',
+      cgpa: editingEdu.cgpa || '',
+      description: editingEdu.description || '',
+      highlights: highlightsArray
+    });
+
     setEditingEdu(null);
     showToast('Education updated successfully!');
   };
@@ -360,8 +406,7 @@ export default function Admin() {
     { id: 'academics', label: 'Academics & Qualifications', icon: <GraduationCap size={15} /> },
     { id: 'capabilities', label: 'Capabilities & Stats', icon: <Zap size={15} /> },
     { id: 'experience', label: 'Work Experience', icon: <Award size={15} /> },
-    { id: 'messages', label: `Messages (${(messages || []).filter((m) => m.unread).length})`, icon: <MessageSquare size={15} /> },
-    { id: 'backup', label: 'Backup & Reset', icon: <RotateCcw size={15} /> },
+    { id: 'messages', label: `Messages (${(messages || []).filter((m) => m.unread).length})`, icon: <MessageSquare size={15} /> }
   ];
 
   if (isCheckingAuth) {
@@ -395,9 +440,6 @@ export default function Admin() {
       {/* Center Floating Toast Notification */}
       <AdminToast toast={toast} setToast={setToast} />
 
-      {/* Admin Security Banner */}
-      <AdminHeader adminUser={adminUser} onLogout={handleLogout} />
-
       {/* Responsive Navigation Tabs (Never overflows screen) */}
       <div className="p-1.5 rounded-2xl bg-slate-100/90 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-wrap gap-1.5 justify-start sm:justify-center">
         {tabs.map((tab) => {
@@ -425,6 +467,7 @@ export default function Admin() {
           profileForm={profileForm}
           setProfileForm={setProfileForm}
           handleSaveProfile={handleSaveProfile}
+          updateProfile={updateProfile}
           uploadImage={uploadImage}
           setUploadingImage={setUploadingImage}
           showToast={showToast}
@@ -511,8 +554,8 @@ export default function Admin() {
           setEditingEdu={setEditingEdu}
           newEdu={newEdu}
           setNewEdu={setNewEdu}
-          handleAddEdu={handleAddEdu}
-          handleUpdateEdu={handleUpdateEdu}
+          handleAddEdu={handleAddEducation}
+          handleUpdateEdu={handleSaveEditEdu}
           deleteEducation={deleteEducation}
           showToast={showToast}
         />
@@ -533,6 +576,7 @@ export default function Admin() {
           deleteStat={deleteStat}
           capabilities={capabilities}
           addCapability={addCapability}
+          updateCapability={updateCapability}
           deleteCapability={deleteCapability}
           lifestyle={lifestyle}
           addLifestyle={addLifestyle}
@@ -551,6 +595,7 @@ export default function Admin() {
           setNewExp={setNewExp}
           handleAddExp={handleAddExp}
           deleteExperience={deleteExperience}
+          updateExperience={updateExperience}
           showToast={showToast}
         />
       )}
@@ -560,15 +605,8 @@ export default function Admin() {
         <AdminMessagesTab
           messages={messages}
           markMessageRead={markMessageRead}
+          updateMessageRemark={updateMessageRemark}
           deleteMessage={deleteMessage}
-          showToast={showToast}
-        />
-      )}
-
-      {/* TAB 8: BACKUP */}
-      {activeTab === 'backup' && (
-        <AdminBackupTab
-          resetToDefaults={resetToDefaults}
           showToast={showToast}
         />
       )}

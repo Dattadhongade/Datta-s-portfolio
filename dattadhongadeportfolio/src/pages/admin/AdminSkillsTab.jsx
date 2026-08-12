@@ -3,7 +3,30 @@ import { createPortal } from 'react-dom';
 import { Code2, Plus, Edit2, Trash2, Check, Award, X, Sliders, ChevronDown, Search } from 'lucide-react';
 import TechIcon, { TECH_ICON_REGISTRY } from '../../components/TechIcon';
 
-// Custom Searchable Tech Icon Picker — always-open search input as trigger, real colored SVG icons
+// Helper: given a stored icon string (could be key "react", label "React.js", or full name), find the registry key
+function resolveIconKey(iconStr) {
+  if (!iconStr) return '';
+  const norm = iconStr.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  // Direct key match
+  let found = TECH_ICON_REGISTRY.find(item => item.key === iconStr.trim() || item.key.toLowerCase() === norm);
+  // Label match
+  if (!found) {
+    found = TECH_ICON_REGISTRY.find(item => {
+      const normLabel = item.label.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return normLabel === norm;
+    });
+  }
+  // Substring match
+  if (!found) {
+    found = TECH_ICON_REGISTRY.find(item => {
+      const normLabel = item.label.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return (normLabel.length > 2 && norm.includes(normLabel)) || (item.key.length > 2 && norm.includes(item.key));
+    });
+  }
+  return found ? found.key : '';
+}
+
+// Custom Searchable Tech Icon Picker — inline search trigger, real colored SVG icons, with close button
 function SearchableIconDropdown({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -14,6 +37,7 @@ function SearchableIconDropdown({ value, onChange }) {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
+        setSearch('');
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -35,20 +59,24 @@ function SearchableIconDropdown({ value, onChange }) {
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      {/* ── Trigger: shows search input (selected icon shown left) ── */}
+      {/* Trigger: selected icon preview + search input + chevron + X close */}
       <div
-        className={`w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border flex items-center gap-2.5 cursor-pointer transition-colors ${
+        className={`w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border flex items-center gap-2 cursor-pointer transition-colors ${
           isOpen ? 'border-cyan-500' : 'border-slate-300 dark:border-white/10'
         }`}
-        onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 50); }}
       >
-        {/* Selected icon preview */}
-        <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shrink-0">
+        {/* Selected icon preview box */}
+        <div
+          className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shrink-0 cursor-pointer"
+          onClick={() => { setIsOpen(true); setTimeout(() => inputRef.current?.focus(), 50); }}
+        >
           {selectedItem
-            ? React.createElement(selectedItem.icon, { className: selectedItem.color, size: 20 })
-            : <Code2 className="text-cyan-500" size={20} />
+            ? React.createElement(selectedItem.icon, { className: selectedItem.color, size: 18 })
+            : <Code2 className="text-cyan-500" size={18} />
           }
         </div>
+
+        {/* Inline search input */}
         <input
           ref={inputRef}
           type="text"
@@ -58,17 +86,55 @@ function SearchableIconDropdown({ value, onChange }) {
           onFocus={() => setIsOpen(true)}
           className="flex-1 min-w-0 bg-transparent text-sm font-semibold text-black dark:text-white placeholder-slate-400 focus:outline-none cursor-text"
         />
+
+        {/* X clear / close button */}
+        {(isOpen || value) && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isOpen) {
+                setIsOpen(false);
+                setSearch('');
+              } else {
+                onChange('');
+                setSearch('');
+              }
+            }}
+            className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 dark:bg-white/15 text-slate-500 dark:text-slate-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 hover:text-rose-500 transition-colors cursor-pointer"
+            title={isOpen ? 'Close dropdown' : 'Clear selection'}
+          >
+            <X size={11} />
+          </button>
+        )}
+
+        {/* Chevron toggle */}
         <ChevronDown
           size={14}
-          className={`shrink-0 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-cyan-500' : ''}`}
+          className={`shrink-0 text-slate-400 transition-transform duration-200 cursor-pointer ${
+            isOpen ? 'rotate-180 text-cyan-500' : ''
+          }`}
+          onClick={() => { setIsOpen(prev => !prev); if (!isOpen) setTimeout(() => inputRef.current?.focus(), 50); }}
         />
       </div>
 
-      {/* ── Dropdown Panel ── */}
+      {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-[9999] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-2 flex flex-col gap-1 animate-in fade-in zoom-in-95 duration-150">
-          <div className="overflow-y-auto max-h-60">
-            {/* All Tech Icons from TECH_ICON_REGISTRY — real colored SVG icons */}
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-9999 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          {/* Panel header with close */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Select Tech Icon</span>
+            <button
+              type="button"
+              onClick={() => { setIsOpen(false); setSearch(''); }}
+              className="w-5 h-5 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 hover:bg-rose-100 hover:text-rose-500 transition-colors cursor-pointer"
+            >
+              <X size={11} />
+            </button>
+          </div>
+
+          {/* Scrollable icon list */}
+          <div className="overflow-y-auto max-h-56 p-1.5 space-y-0.5">
             {filteredIcons.map((item) => {
               const isSelected = value === item.key;
               const IconComp = item.icon;
@@ -83,16 +149,14 @@ function SearchableIconDropdown({ value, onChange }) {
                       : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'
                   }`}
                 >
-                  {/* Real colored icon */}
                   <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0">
                     <IconComp className={item.color} size={20} />
                   </div>
-                  <span className="truncate text-sm">{item.label}</span>
+                  <span className="truncate">{item.label}</span>
                   {isSelected && <Check size={14} className="ml-auto text-cyan-500 shrink-0" />}
                 </button>
               );
             })}
-
             {filteredIcons.length === 0 && (
               <p className="p-4 text-center text-sm text-slate-400">No icons matching "{search}"</p>
             )}
@@ -146,14 +210,17 @@ export default function AdminSkillsTab({
     }
   }, [currentCategory, formMode]);
 
-  // Handle Edit button click on any skill card
+  // Handle Edit button click on any skill card — resolve stored icon string to registry key
   const handleStartEdit = (category, idx, skill) => {
     setFormMode('edit');
     setEditTarget({ category, index: idx });
     setFormCategory(category);
     setFormSkillName(skill.name);
-    setFormIcon(skill.icon || skill.iconName || skill.name);
-    const progressVal = parseInt(skill.progress || skill.level || 88) || 88;
+    // Resolve whatever is stored in skill.icon/iconName/name to a valid registry key
+    const rawIcon = skill.icon || skill.iconName || '';
+    const resolvedKey = resolveIconKey(rawIcon) || resolveIconKey(skill.name) || '';
+    setFormIcon(resolvedKey);
+    const progressVal = parseInt(skill.progress || 88) || 88;
     setFormProgress(progressVal);
 
     if (formSectionRef.current) {
@@ -356,9 +423,10 @@ export default function AdminSkillsTab({
         </div>
 
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Target Category Dropdown (Lists ALL Added Categories) */}
-            <div>
+          {/* Single row: Target Category | Skill Name | Icon Picker */}
+          <div className="flex flex-col sm:flex-row gap-3 items-end">
+            {/* Target Category Dropdown */}
+            <div className="flex-1 min-w-0">
               <label className="block text-[11px] font-bold text-black dark:text-slate-300 mb-1">Target Category</label>
               <select
                 value={formCategory}
@@ -374,7 +442,7 @@ export default function AdminSkillsTab({
             </div>
 
             {/* Skill Name Input */}
-            <div>
+            <div className="flex-1 min-w-0">
               <label className="block text-[11px] font-bold text-black dark:text-slate-300 mb-1">Skill Name</label>
               <input
                 type="text"
@@ -386,8 +454,9 @@ export default function AdminSkillsTab({
               />
             </div>
 
-            {/* Searchable Tech Icon Selector — no label, inline search trigger */}
-            <div>
+            {/* Searchable Tech Icon — aligned to bottom of row */}
+            <div className="flex-1 min-w-0">
+              <label className="block text-[11px] font-bold text-black dark:text-slate-300 mb-1">Tech Icon</label>
               <SearchableIconDropdown
                 value={formIcon}
                 onChange={(iconKey) => setFormIcon(iconKey)}
@@ -523,7 +592,7 @@ export default function AdminSkillsTab({
         {/* Add Cert Modal */}
         {showAddCert &&
           createPortal(
-            <div className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4">
               <div className="glass-card rounded-2xl p-6 max-w-md w-full border border-slate-200/80 dark:border-white/10 space-y-4">
                 <div className="flex justify-between items-center border-b pb-3">
                   <h4 className="text-sm font-bold text-black dark:text-white">Add Certification</h4>

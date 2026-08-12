@@ -59,14 +59,27 @@ export default function Contact() {
 
   const getSocialIcon = (name) => {
     switch ((name || "").toLowerCase()) {
-      case "github": return <FaGithub size={18} />;
-      case "linkedin": return <FaLinkedin size={18} />;
-      case "leetcode": return <SiLeetcode size={18} />;
-      case "instagram": return <FaInstagram size={18} />;
+      case "github": return <FaGithub size={18} className="text-slate-800 dark:text-slate-100" />;
+      case "linkedin": return <FaLinkedin size={18} className="text-[#0A66C2]" />;
+      case "leetcode": return <SiLeetcode size={18} className="text-[#FFA116]" />;
+      case "instagram": return <FaInstagram size={18} className="text-[#E4405F]" />;
       case "twitter":
-      case "x": return <FaTwitter size={18} />;
-      case "youtube": return <FaYoutube size={18} />;
-      default: return <Globe size={18} />;
+      case "x": return <FaTwitter size={18} className="text-[#1DA1F2]" />;
+      case "youtube": return <FaYoutube size={18} className="text-[#FF0000]" />;
+      default: return <Globe size={18} className="text-emerald-500" />;
+    }
+  };
+
+  const getSocialStyle = (name) => {
+    switch ((name || "").toLowerCase()) {
+      case "github": return "bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 border-slate-300 dark:border-white/15";
+      case "linkedin": return "bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 border-blue-200 dark:border-blue-500/30";
+      case "leetcode": return "bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 border-amber-200 dark:border-amber-500/30";
+      case "instagram": return "bg-pink-50 hover:bg-pink-100 dark:bg-pink-500/10 dark:hover:bg-pink-500/20 border-pink-200 dark:border-pink-500/30";
+      case "twitter":
+      case "x": return "bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/10 dark:hover:bg-sky-500/20 border-sky-200 dark:border-sky-500/30";
+      case "youtube": return "bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 border-red-200 dark:border-red-500/30";
+      default: return "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 border-emerald-200 dark:border-emerald-500/30";
     }
   };
 
@@ -260,7 +273,12 @@ export default function Contact() {
             </div>
             <div>
               <h4 className="text-xs font-bold text-black dark:text-slate-400">Direct Email</h4>
-              <p className="fluid-sm font-semibold text-black dark:text-white">{profile.email || "dattadhongade@gmail.com"}</p>
+              <a
+                href={`mailto:${profile?.email || "dattadhongade@gmail.com"}`}
+                className="fluid-sm font-semibold text-black dark:text-white hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors block truncate"
+              >
+                {profile?.email || "dattadhongade@gmail.com"}
+              </a>
             </div>
           </div>
 
@@ -283,18 +301,22 @@ export default function Contact() {
           </div>
 
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            {(profile.socialLinks || []).map((social) => (
-              <a
-                key={social.name}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/90 dark:border-white/10 text-black dark:text-white hover:text-cyan-600 dark:hover:text-cyan-300 hover:border-cyan-400 transition-all hover:scale-110 shadow-2xs"
-                title={social.name}
-              >
-                {getSocialIcon(social.name)}
-              </a>
-            ))}
+            {(profile.socialLinks || []).map((social) => {
+              const formattedHref = social.href ? (social.href.startsWith('http') ? social.href : `https://${social.href}`) : '#';
+              const customStyle = getSocialStyle(social.name);
+              return (
+                <a
+                  key={social.name}
+                  href={formattedHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`p-2.5 rounded-xl border transition-all duration-200 hover:-translate-y-1 hover:scale-110 shadow-xs ${customStyle}`}
+                  title={social.name}
+                >
+                  {getSocialIcon(social.name)}
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>

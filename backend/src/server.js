@@ -28,7 +28,13 @@ if (!fs.existsSync(uploadDir)) {
 
 // Security & Standard Middleware
 app.use(cors({ origin: '*' }));
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginEmbedderPolicy: false,
+    frameguard: false
+  })
+);
 app.use(morgan('dev'));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -53,8 +59,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static uploads serving
-app.use('/uploads', express.static(uploadDir));
+// Static uploads serving with iframe and CORS headers for inline PDF viewing
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.removeHeader('X-Frame-Options');
+    next();
+  },
+  express.static(uploadDir)
+);
 
 // Mount API Routes
 app.use('/api/auth', authRoutes);

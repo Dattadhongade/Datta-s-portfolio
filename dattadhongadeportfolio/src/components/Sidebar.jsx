@@ -1,6 +1,7 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Download, Mail, Sun, Moon, X, Code2, MapPin, Send, Shield, Globe } from "lucide-react";
+import React, { useState } from "react";
+import { createPortal } from "react-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, FileText, ExternalLink, Download, Mail, Sun, Moon, X, Code2, MapPin, Send, Shield, Globe } from "lucide-react";
 import { FaGithub, FaLinkedin, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import { SiLeetcode } from "react-icons/si";
 import { usePortfolio } from "../context/PortfolioContext";
@@ -8,21 +9,93 @@ import heroDark from "../assets/hero.png";
 import heroLight from "../assets/hero.png";
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme }) => {
-  const location = useLocation();
-  const { profile } = usePortfolio();
+  const navigate = useNavigate();
+  const { profile, educations, education, skills, experiences } = usePortfolio();
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
+  const [pdfViewerUrl, setPdfViewerUrl] = useState("");
 
   const getSocialIcon = (name) => {
     switch ((name || "").toLowerCase()) {
-      case "github": return <FaGithub size={17} />;
-      case "linkedin": return <FaLinkedin size={17} />;
-      case "leetcode": return <SiLeetcode size={17} />;
-      case "instagram": return <FaInstagram size={17} />;
+      case "github": return <FaGithub size={17} className="text-slate-800 dark:text-slate-100" />;
+      case "linkedin": return <FaLinkedin size={17} className="text-[#0A66C2]" />;
+      case "leetcode": return <SiLeetcode size={17} className="text-[#FFA116]" />;
+      case "instagram": return <FaInstagram size={17} className="text-[#E4405F]" />;
       case "twitter":
-      case "x": return <FaTwitter size={17} />;
-      case "youtube": return <FaYoutube size={17} />;
+      case "x": return <FaTwitter size={17} className="text-[#1DA1F2]" />;
+      case "youtube": return <FaYoutube size={17} className="text-[#FF0000]" />;
       case "website":
-      case "portfolio": return <Globe size={17} />;
-      default: return <Globe size={17} />;
+      case "portfolio": return <Globe size={17} className="text-emerald-500" />;
+      default: return <Globe size={17} className="text-cyan-500" />;
+    }
+  };
+
+  const getSocialStyle = (name) => {
+    switch ((name || "").toLowerCase()) {
+      case "github": return "bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 border-slate-300 dark:border-white/15";
+      case "linkedin": return "bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 border-blue-200 dark:border-blue-500/30";
+      case "leetcode": return "bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 border-amber-200 dark:border-amber-500/30";
+      case "instagram": return "bg-pink-50 hover:bg-pink-100 dark:bg-pink-500/10 dark:hover:bg-pink-500/20 border-pink-200 dark:border-pink-500/30";
+      case "twitter":
+      case "x": return "bg-sky-50 hover:bg-sky-100 dark:bg-sky-500/10 dark:hover:bg-sky-500/20 border-sky-200 dark:border-sky-500/30";
+      case "youtube": return "bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 border-red-200 dark:border-red-500/30";
+      case "website":
+      case "portfolio": return "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 border-emerald-200 dark:border-emerald-500/30";
+      default: return "bg-slate-100 hover:bg-cyan-50 dark:bg-slate-800/60 dark:hover:bg-cyan-500/20 border-slate-200 dark:border-slate-700/60";
+    }
+  };
+
+  const formatExternalUrl = (url) => {
+    if (!url) return "";
+    const trimmed = String(url).trim();
+    if (!trimmed || trimmed === "#") return "";
+    if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) {
+      return trimmed;
+    }
+    return `https://${trimmed}`;
+  };
+
+  const handleResumeClick = async (e) => {
+    if (e) e.preventDefault();
+    setIsSidebarOpen(false);
+    const resumeUrl = profile?.resumeDownloadUrl;
+
+    if (resumeUrl && resumeUrl !== "#download" && resumeUrl.trim() !== "") {
+      if (resumeUrl.startsWith("data:application/pdf")) {
+        try {
+          const base64Data = resumeUrl.split(",")[1];
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: "application/pdf" });
+          const blobUrl = URL.createObjectURL(blob);
+          setPdfViewerUrl(blobUrl);
+        } catch (err) {
+          setPdfViewerUrl(resumeUrl);
+        }
+        setShowPdfViewer(true);
+      } else {
+        const fullUrl = formatExternalUrl(resumeUrl);
+        try {
+          const res = await fetch(fullUrl);
+          if (res.ok) {
+            const blob = await res.blob();
+            const pdfBlob = new Blob([blob], { type: "application/pdf" });
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            setPdfViewerUrl(blobUrl);
+          } else {
+            setPdfViewerUrl(fullUrl);
+          }
+        } catch (err) {
+          setPdfViewerUrl(fullUrl);
+        }
+        setShowPdfViewer(true);
+      }
+    } else {
+      setPdfViewerUrl("");
+      setShowPdfViewer(true);
     }
   };
 
@@ -36,13 +109,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme }) =
         />
       )}
 
-      {/* Sidebar Main Dock with tighter clean margin */}
+      {/* Sidebar Main */}
       <aside className={`
         fixed lg:left-4 top-0 lg:top-4 bottom-0 lg:bottom-4 lg:h-[calc(100vh-32px)] z-50
         w-66.25 lg:w-65 
         glass-panel
         lg:rounded-2xl shadow-xl
-        transition-all duration-300 ease-in-out flex flex-col justify-between
+        transition-all duration-300 ease-in-out flex flex-col gap-10 sm:gap-7
         overflow-y-auto no-scrollbar
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
@@ -77,10 +150,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme }) =
           </button>
         </div>
 
-        {/* Profile Avatar & Identity with clean spacing */}
-        <div className="flex flex-col items-center pt-3 px-6 text-center">
-          {/* Animated Avatar Ring with Snappy Crossfade - Increased size */}
-          <div className="relative w-32 h-32 lg:w-36 lg:h-36 mb-3.5 group cursor-pointer">
+        {/* Profile Avatar & Identity with clean, balanced spacing */}
+        <div className="flex flex-col items-center pt-3 lg:pt-4 px-6 text-center">
+          {/* Animated Avatar Ring with Snappy Crossfade */}
+          <div className="relative w-30 h-30 sm:w-32 sm:h-32 lg:w-36 lg:h-36 mb-3 group cursor-pointer">
             <div className="absolute -inset-1 rounded-full bg-linear-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 opacity-70 group-hover:opacity-100 group-hover:rotate-180 transition-all duration-700"></div>
             <div className="relative w-full h-full rounded-full p-1 bg-white dark:bg-[#080b14] overflow-hidden shadow-md">
               <img
@@ -90,17 +163,17 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme }) =
                 className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-all duration-300 animate-in fade-in"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop";
+                  e.target.src = isDarkMode ? heroDark : heroLight;
                 }}
               />
             </div>
           </div>
 
-          <h2 className="fluid-h2 font-semibold text-black dark:text-white tracking-tight mb-2">
+          <h2 className="text-sm sm:text-base xl:text-xl font-bold text-black dark:text-white tracking-tight mb-1.5">
             {profile.name}
           </h2>
 
-          <div className="flex items-center gap-1.5 text-xs text-black dark:text-slate-400 mb-3 font-medium">
+          <div className="flex items-center gap-1.5 text-xs text-black dark:text-slate-400 mb-2.5 font-medium">
             <MapPin size={13} className="text-cyan-600 dark:text-cyan-500" />
             <span>{profile.location}</span>
           </div>
@@ -112,18 +185,17 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme }) =
           </div>
         </div>
 
-        {/* Action CTAs */}
+        {/* Action CTAs — Well-spaced */}
         <div className="flex flex-col gap-2.5 px-6 my-4 w-full">
-          <Link
-            to="/resume"
-            onClick={() => setIsSidebarOpen(false)}
-            className="w-full py-2.5 px-4 rounded-xl bg-linear-to-r from-cyan-600 via-indigo-600 to-purple-600 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
+          <button
+            type="button"
+            onClick={handleResumeClick}
+            className="w-full py-2.5 px-4 rounded-xl bg-linear-to-r from-cyan-600 via-indigo-600 to-purple-600 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group cursor-pointer"
           >
-            <Download size={15} className="group-hover:-translate-y-0.5 transition-transform" />
+            <Eye size={15} className="group-hover:scale-110 transition-transform" />
             <span>View Resume</span>
-          </Link>
+          </button>
 
-          {/* Renamed to Let's Connect */}
           <Link
             to="/contact"
             onClick={() => setIsSidebarOpen(false)}
@@ -134,31 +206,185 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme }) =
           </Link>
         </div>
 
-        {/* Social Matrix */}
+        {/* Social Matrix — Vibrant Brand Colors */}
         <div className="p-4 border-t border-slate-200/80 dark:border-white/5 space-y-3">
-          <div className="flex justify-center gap-2">
-            {(profile.socialLinks || []).map((social) => (
-              <a
-                key={social.name}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-black dark:text-slate-300 ${social.color} transition-all duration-200 hover:-translate-y-0.5 shadow-xs`}
-                title={social.name}
-                aria-label={social.name}
-              >
-                {getSocialIcon(social.name)}
-              </a>
-            ))}
+          <div className="flex justify-center gap-2.5 flex-wrap">
+            {(profile.socialLinks || []).map((social) => {
+              const formattedHref = formatExternalUrl(social.href);
+              const customStyle = getSocialStyle(social.name);
+              return (
+                <a
+                  key={social.name}
+                  href={formattedHref || "#"}
+                  target={formattedHref ? "_blank" : undefined}
+                  rel={formattedHref ? "noopener noreferrer" : undefined}
+                  className={`p-2.5 rounded-xl border transition-all duration-200 hover:-translate-y-1 hover:scale-110 shadow-xs ${customStyle}`}
+                  title={social.name}
+                  aria-label={social.name}
+                >
+                  {getSocialIcon(social.name)}
+                </a>
+              );
+            })}
           </div>
         </div>
 
       </aside>
+
+      {/* Fullscreen Interactive Resume Viewer Modal (Always opens on View Resume) */}
+      {showPdfViewer && createPortal(
+        <div 
+          className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200"
+          onClick={() => setShowPdfViewer(false)}
+        >
+          <div 
+            className="glass-card w-full max-w-5xl h-[90vh] rounded-2xl p-4 sm:p-6 flex flex-col border border-slate-200/80 dark:border-white/10 shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 pb-3 mb-3 shrink-0">
+              <div className="flex items-center gap-2">
+                <FileText className="text-cyan-500" size={18} />
+                <h3 className="text-sm sm:text-base font-bold text-black dark:text-white truncate">
+                  {profile?.name ? `${profile.name} — Resume Document` : 'Resume Document'}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                {pdfViewerUrl ? (
+                  <>
+                    <a
+                      href={pdfViewerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-black dark:text-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold"
+                      title="Open in new window tab"
+                    >
+                      <ExternalLink size={13} />
+                      <span className="hidden sm:inline">New Tab</span>
+                    </a>
+                    <a
+                      href={pdfViewerUrl}
+                      download={profile?.name ? `${profile.name.replace(/\s+/g, '_')}_Resume.pdf` : 'Resume.pdf'}
+                      className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-xs"
+                      title="Download copy"
+                    >
+                      <Download size={13} />
+                      <span className="hidden sm:inline">Download PDF</span>
+                    </a>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => window.print()}
+                    className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-xs cursor-pointer"
+                  >
+                    <Download size={13} />
+                    <span>Print / Save</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowPdfViewer(false)}
+                  className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer ml-1"
+                  title="Close viewer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            {pdfViewerUrl ? (
+              <div className="flex-1 w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-white/10 relative">
+                <object
+                  data={pdfViewerUrl}
+                  type="application/pdf"
+                  className="w-full h-full rounded-xl"
+                >
+                  <iframe
+                    src={`${pdfViewerUrl}#toolbar=1&view=FitH`}
+                    className="w-full h-full border-none rounded-xl"
+                    title="Resume PDF Document Viewer"
+                  >
+                    <div className="flex flex-col items-center justify-center h-full p-6 text-center space-y-3">
+                      <FileText size={40} className="text-cyan-500" />
+                      <p className="text-sm font-semibold text-white">Your browser could not preview this PDF inline.</p>
+                      <a
+                        href={pdfViewerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold"
+                      >
+                        Open PDF in New Window
+                      </a>
+                    </div>
+                  </iframe>
+                </object>
+              </div>
+            ) : (
+              <div className="flex-1 w-full rounded-xl overflow-y-auto p-6 sm:p-8 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 space-y-6 text-black dark:text-white">
+                {/* Header Profile */}
+                <div className="border-b border-slate-200 dark:border-white/10 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold">{profile?.name}</h2>
+                    <p className="text-sm text-cyan-600 dark:text-cyan-400 font-semibold">{profile?.role}</p>
+                    <p className="text-xs text-slate-500">{profile?.location} • {profile?.email}</p>
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Professional Summary</h4>
+                  <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{profile?.bioParagraph1}</p>
+                  {profile?.bioParagraph2 && <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{profile.bioParagraph2}</p>}
+                </div>
+
+                {/* Experience */}
+                {experiences && experiences.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Work Experience</h4>
+                    <div className="space-y-3">
+                      {experiences.map((exp) => (
+                        <div key={exp.id} className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1.5">
+                          <div className="flex justify-between items-baseline">
+                            <h5 className="text-sm font-bold">{exp.company}</h5>
+                            <span className="text-xs text-cyan-500 font-semibold">{exp.duration}</span>
+                          </div>
+                          {(exp.roles || []).map((r, ri) => (
+                            <div key={ri} className="text-xs space-y-1 pt-1">
+                              <p className="font-semibold text-indigo-500 dark:text-indigo-300">{r.title} — <span className="text-slate-400 font-normal">{r.type}</span></p>
+                              {r.description && <p className="text-slate-600 dark:text-slate-300">{r.description}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Education */}
+                {((educations && educations.length > 0) || education) && (
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Education &amp; Qualifications</h4>
+                    <div className="space-y-2">
+                      {(educations?.length > 0 ? educations : [education]).map((edu, idx) => (
+                        <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex justify-between items-baseline">
+                          <div>
+                            <h5 className="text-xs sm:text-sm font-bold">{edu?.degree}</h5>
+                            <p className="text-xs text-slate-500">{edu?.college || edu?.institution}</p>
+                          </div>
+                          <span className="text-xs text-emerald-500 font-bold">{edu?.duration} • CGPA: {edu?.cgpa}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
     </>
   );
 };
 
 export default Sidebar;
-
-
-

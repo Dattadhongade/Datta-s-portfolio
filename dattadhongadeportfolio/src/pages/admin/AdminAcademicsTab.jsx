@@ -136,7 +136,7 @@ export default function AdminAcademicsTab({
 
       {/* ADD EDUCATION MODAL */}
       {showAddEdu && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 sm:p-8 max-w-lg w-full border border-slate-200/80 dark:border-white/10 space-y-4">
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="text-base font-bold text-black dark:text-white">Add Education Entry</h3>
@@ -198,11 +198,21 @@ export default function AdminAcademicsTab({
                 </div>
               </div>
               <div>
+                <label className="block text-xs font-bold mb-1">Academic Description / Overview</label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Specialized in enterprise full-stack development, cloud architecture, and data engineering."
+                  value={newEdu.description || ''}
+                  onChange={(e) => setNewEdu({ ...newEdu, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border text-xs"
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-bold mb-1">Academic Highlights (one per line)</label>
                 <textarea
                   rows={3}
                   placeholder="Specialized in Full Stack Development&#10;Published Research Paper"
-                  value={newEdu.highlights}
+                  value={newEdu.highlights || ''}
                   onChange={(e) => setNewEdu({ ...newEdu, highlights: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border text-xs"
                 />
@@ -219,7 +229,7 @@ export default function AdminAcademicsTab({
 
       {/* EDIT EDUCATION MODAL */}
       {editingEdu && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 sm:p-8 max-w-lg w-full border border-slate-200/80 dark:border-white/10 space-y-4">
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="text-base font-bold text-black dark:text-white">Edit Education Entry</h3>
@@ -274,6 +284,16 @@ export default function AdminAcademicsTab({
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border text-xs"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold mb-1">Academic Description / Overview</label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Specialized in enterprise full-stack development, cloud architecture, and data engineering."
+                  value={editingEdu.description || ''}
+                  onChange={(e) => setEditingEdu({ ...editingEdu, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border text-xs"
+                />
               </div>
               <div>
                 <label className="block text-xs font-bold mb-1">Academic Highlights (one per line)</label>
