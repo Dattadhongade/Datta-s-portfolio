@@ -44,6 +44,53 @@ exports.deleteSkill = async (req, res) => {
   }
 };
 
+// UPDATE Skill
+exports.updateSkill = async (req, res) => {
+  try {
+    const { category, index } = req.params;
+    const updatedSkill = req.body;
+    const data = await getPortfolioData();
+    if (data.skills && data.skills[category] && data.skills[category][Number(index)] !== undefined) {
+      data.skills[category][Number(index)] = { ...data.skills[category][Number(index)], ...updatedSkill };
+      await savePortfolioData(data);
+    }
+    res.json({ success: true, message: 'Skill updated', data: data.skills });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ADD Skill Category (empty category)
+exports.addSkillCategory = async (req, res) => {
+  try {
+    const { category } = req.body;
+    if (!category || !category.trim()) return res.status(400).json({ success: false, error: 'Category name required' });
+    const data = await getPortfolioData();
+    data.skills = data.skills || {};
+    if (!data.skills[category.trim()]) {
+      data.skills[category.trim()] = [];
+      await savePortfolioData(data);
+    }
+    res.status(201).json({ success: true, message: 'Category added', data: data.skills });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// SAVE ALL Skills (bulk update entire skills object)
+exports.saveAllSkills = async (req, res) => {
+  try {
+    const { skills } = req.body;
+    if (!skills || typeof skills !== 'object') return res.status(400).json({ success: false, error: 'skills object required' });
+    const data = await getPortfolioData();
+    data.skills = skills;
+    await savePortfolioData(data);
+    res.json({ success: true, message: 'All skills saved', data: data.skills });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // EDUCATIONS CRUD
 exports.addEducation = async (req, res) => {
   try {

@@ -11,9 +11,24 @@ export const skillsApi = {
     return api.post('/skills/skill', { category, skill });
   },
 
+  // Update skill by index
+  updateSkill: async (category, index, updatedSkill) => {
+    return api.put(`/skills/skill/${encodeURIComponent(category)}/${index}`, updatedSkill);
+  },
+
   // Delete skill
   deleteSkill: async (category, index) => {
-    return api.delete(`/skills/skill/${category}/${index}`);
+    return api.delete(`/skills/skill/${encodeURIComponent(category)}/${index}`);
+  },
+
+  // Add a new empty category
+  addSkillCategory: async (category) => {
+    return api.post('/skills/category', { category });
+  },
+
+  // Bulk save entire skills object
+  saveAllSkills: async (skills) => {
+    return api.put('/skills/all', { skills });
   },
 
   // Educations CRUD

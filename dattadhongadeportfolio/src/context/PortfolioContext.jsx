@@ -622,16 +622,30 @@ export const PortfolioProvider = ({ children }) => {
 
   // 8. Skill Matrix methods
   const addSkill = (category, skill) => {
+    let targetCategory = category;
+    let skillData = skill;
+
+    if (typeof category === 'object' && category !== null && category.category) {
+      targetCategory = category.category;
+      skillData = { ...category };
+      delete skillData.category;
+    }
+
+    if (!targetCategory) return;
+
     setData((prev) => {
-      const currentList = prev.skills[category] || [];
+      const currentList = prev.skills[targetCategory] || [];
       return {
         ...prev,
         skills: {
           ...prev.skills,
-          [category]: [...currentList, skill]
+          [targetCategory]: [...currentList, skillData]
         }
       };
     });
+
+    // Persist to DB
+    skillsApi.addSkill(targetCategory, skillData).catch(console.error);
   };
 
   const deleteSkill = (category, index) => {
@@ -645,6 +659,9 @@ export const PortfolioProvider = ({ children }) => {
         }
       };
     });
+
+    // Persist to DB
+    skillsApi.deleteSkill(category, index).catch(console.error);
   };
 
   const updateSkill = (category, index, updatedSkill) => {
@@ -661,6 +678,9 @@ export const PortfolioProvider = ({ children }) => {
         }
       };
     });
+
+    // Persist to DB
+    skillsApi.updateSkill(category, index, updatedSkill).catch(console.error);
   };
 
   const addSkillCategory = (newCategory) => {
@@ -675,6 +695,9 @@ export const PortfolioProvider = ({ children }) => {
         }
       };
     });
+
+    // Persist to DB
+    skillsApi.addSkillCategory(newCategory.trim()).catch(console.error);
   };
 
   // 9. Certifications methods
