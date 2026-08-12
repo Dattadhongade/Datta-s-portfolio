@@ -11,12 +11,15 @@ let isDbConnected = false;
 
 async function initDatabase() {
   try {
+    const sslConfig = process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined;
+
     // 1. Try to connect to MySQL Server
     const connection = await mysql.createConnection({
       host: process.env.DB_HOST || 'localhost',
       port: Number(process.env.DB_PORT) || 3306,
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
+      ssl: sslConfig
     });
 
     const dbName = process.env.DB_NAME || 'portfolio_db';
@@ -32,6 +35,7 @@ async function initDatabase() {
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
       database: dbName,
+      ssl: sslConfig,
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0
