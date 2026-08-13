@@ -168,14 +168,14 @@ export default function AdminProjectsTab({
         </div>
       </div>
 
-      {/* ─── Projects Grid — Public Card Style ─── */}
+      {/* projects grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {projects.map((project, idx) => (
           <div
             key={project.id}
             className="glass-card rounded-2xl overflow-hidden flex flex-col justify-between group hover:-translate-y-1 transition-all duration-200 border border-slate-200/80 dark:border-white/10 hover:border-cyan-500/40"
           >
-            {/* Image + Overlays (Clean — Only Category Badge) */}
+            {/* image */}
             <div className="w-full aspect-16/10 bg-slate-100 dark:bg-slate-900 overflow-hidden relative">
               <img
                 src={project.image || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop"}
@@ -325,7 +325,7 @@ export default function AdminProjectsTab({
         ))}
       </div>
 
-      {/* ─── ADD PROJECT MODAL ─── */}
+      {/* add project modal */}
       {showAddProject && createPortal(
         <div className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 sm:p-8 max-w-2xl w-full border border-slate-200/80 dark:border-white/10 space-y-5 max-h-[90vh] overflow-y-auto">
@@ -360,7 +360,7 @@ export default function AdminProjectsTab({
                 </div>
               </div>
 
-              {/* Image — Upload only */}
+              {/* image upload */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-black dark:text-slate-300">Project Image</label>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
@@ -449,7 +449,7 @@ export default function AdminProjectsTab({
         document.body
       )}
 
-      {/* ─── EDIT PROJECT MODAL ─── */}
+      {/* edit project modal */}
       {editingProject && createPortal(
         <div className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4">
           <div className="glass-card rounded-2xl p-6 sm:p-8 max-w-2xl w-full border border-slate-200/80 dark:border-white/10 space-y-5 max-h-[90vh] overflow-y-auto">
@@ -484,7 +484,7 @@ export default function AdminProjectsTab({
                 </div>
               </div>
 
-              {/* Image — Upload only */}
+              {/* image upload */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-black dark:text-slate-300">Project Image</label>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-2">
@@ -573,7 +573,7 @@ export default function AdminProjectsTab({
         document.body
       )}
 
-      {/* ─── PROJECT DETAIL MODAL (Matching Public Page) ─── */}
+      {/* project detail modal */}
       {selectedProject && createPortal(
         <div 
           className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-200"

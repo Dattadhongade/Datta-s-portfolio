@@ -37,7 +37,7 @@ const Qualifications = () => {
                 {/* Dot */}
                 <span className="absolute left-[-1.2rem] sm:left-[-1.6rem] top-1.5 w-3 h-3 rounded-full bg-indigo-500 dark:bg-indigo-400 ring-4 ring-white dark:ring-[#080b14] shadow-xs z-10" />
 
-                {/* MAIN POINT: Degree  */}
+                {/* degree */}
                 <div className="flex flex-wrap justify-between items-start gap-1.5 mb-1">
                   <h3 className="text-sm sm:text-base md:text-lg font-bold sm:font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
                     {edu.degree}
@@ -49,7 +49,7 @@ const Qualifications = () => {
                   )}
                 </div>
 
-                {/* ── SUB POINT: Institution, Location & Duration ── */}
+                {/* college and duration */}
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 text-xs sm:text-sm mb-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-cyan-700 dark:text-cyan-400">{edu.college || edu.institution}</span>
@@ -60,7 +60,7 @@ const Qualifications = () => {
                   <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">{edu.duration}</span>
                 </div>
 
-                {/* Description — body text */}
+                {/* description */}
                 {edu.description && (
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-2">
                     {edu.description}

@@ -577,9 +577,7 @@ export default function Admin() {
           experiences={experiences}
           showAddExp={showAddExp}
           setShowAddExp={setShowAddExp}
-          newExp={newExp}
-          setNewExp={setNewExp}
-          handleAddExp={handleAddExp}
+          addExperience={addExperience}
           deleteExperience={deleteExperience}
           updateExperience={updateExperience}
           moveExperience={moveExperience}

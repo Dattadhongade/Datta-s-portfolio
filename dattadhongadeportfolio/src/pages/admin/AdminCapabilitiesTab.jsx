@@ -110,7 +110,7 @@ export default function AdminCapabilitiesTab({
   return (
     <div className="space-y-6">
 
-      {/* ─── 1. METRIC STATS ─── */}
+      {/* metric stats */}
       <div className="glass-card rounded-2xl p-6 space-y-4 border border-slate-200/80 dark:border-white/10">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -130,7 +130,7 @@ export default function AdminCapabilitiesTab({
           </button>
         </div>
 
-        {/* Add Stat Form */}
+        {/* add stat form */}
         {showAddStat && (
           <form
             onSubmit={(e) => {
@@ -169,7 +169,7 @@ export default function AdminCapabilitiesTab({
           </form>
         )}
 
-        {/* Stats Grid */}
+        {/* stats list */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {stats.map((st) => (
             <div key={st.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-2 relative group">
@@ -224,7 +224,7 @@ export default function AdminCapabilitiesTab({
         </div>
       </div>
 
-      {/* ─── 2. CAPABILITIES LIST ─── */}
+      {/* capabilities list */}
       <div className="glass-card rounded-2xl p-6 border border-slate-200/80 dark:border-white/10 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="fluid-h3 font-semibold text-black dark:text-white flex items-center gap-2">
@@ -313,7 +313,7 @@ export default function AdminCapabilitiesTab({
         </div>
       </div>
 
-      {/* ─── 3. INTERESTS & LIFESTYLE SECTION ─── */}
+      {/* interests and lifestyle */}
       <div className="glass-card rounded-2xl p-6 border border-slate-200/80 dark:border-white/10 space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>

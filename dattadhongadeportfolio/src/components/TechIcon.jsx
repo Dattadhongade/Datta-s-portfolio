@@ -126,7 +126,7 @@ export const AlteryxIcon = ({ className = "text-[#0284C7] dark:text-[#004B87]", 
 );
 
 export const TECH_ICON_REGISTRY = [
-  // ─── 📊 DATA ANALYTICS, BI & VISUALIZATION ───
+  // data analytics and bi
   { key: 'powerbi', label: 'Power BI', icon: PowerBiIcon, color: 'text-[#D97706] dark:text-[#F2C811]' },
   { key: 'tableau', label: 'Tableau', icon: TableauIcon, color: 'text-[#2563EB] dark:text-[#E97627]' },
   { key: 'excel', label: 'MS Excel (Spreadsheets)', icon: ExcelIcon, color: 'text-[#16A34A] dark:text-[#217346]' },
@@ -144,7 +144,7 @@ export const TECH_ICON_REGISTRY = [
   { key: 'plotly', label: 'Plotly / Dash', icon: SiPlotly, color: 'text-[#4F46E5] dark:text-[#3F4F75]' },
   { key: 'streamlit', label: 'Streamlit Data Apps', icon: SiStreamlit, color: 'text-[#DC2626] dark:text-[#FF4B4B]' },
 
-  // ─── 🧬 DATA SCIENCE & PYTHON LIBRARIES ───
+  // python and data science
   { key: 'pandas', label: 'Pandas (DataFrames)', icon: SiPandas, color: 'text-[#4338CA] dark:text-[#150458]' },
   { key: 'numpy', label: 'NumPy', icon: SiNumpy, color: 'text-[#0284C7] dark:text-[#4DABCF]' },
   { key: 'scipy', label: 'SciPy', icon: SiScipy, color: 'text-[#1D4ED8] dark:text-[#0054A6]' },
@@ -153,7 +153,7 @@ export const TECH_ICON_REGISTRY = [
   { key: 'jupyter', label: 'Jupyter Notebooks', icon: SiJupyter, color: 'text-[#EA580C] dark:text-[#F37626]' },
   { key: 'rlang', label: 'R (Data Analytics)', icon: SiR, color: 'text-[#1D4ED8] dark:text-[#276DC3]' },
 
-  // ─── 🤖 MACHINE LEARNING & AI ───
+  // machine learning and ai
   { key: 'tensorflow', label: 'TensorFlow', icon: SiTensorflow, color: 'text-[#EA580C] dark:text-[#FF6F00]' },
   { key: 'pytorch', label: 'PyTorch', icon: SiPytorch, color: 'text-[#DC2626] dark:text-[#EE4C2C]' },
   { key: 'keras', label: 'Keras', icon: SiKeras, color: 'text-[#B91C1C] dark:text-[#D00000]' },
@@ -161,7 +161,7 @@ export const TECH_ICON_REGISTRY = [
   { key: 'deeplearning', label: 'Deep Learning / Neural Nets', icon: BrainCircuit, color: 'text-[#7C3AED] dark:text-[#A78BFA]' },
   { key: 'ai', label: 'AI & Machine Learning', icon: Bot, color: 'text-[#059669] dark:text-[#10A37F]' },
 
-  // ─── ⚡ BIG DATA & DATA WAREHOUSING ───
+  // big data and pipelines
   { key: 'spark', label: 'Apache Spark / PySpark', icon: SiApachespark, color: 'text-[#EA580C] dark:text-[#E25A1C]' },
   { key: 'kafka', label: 'Apache Kafka', icon: SiApachekafka, color: 'text-slate-900 dark:text-white' },
   { key: 'airflow', label: 'Apache Airflow (ETL/Pipelines)', icon: SiApacheairflow, color: 'text-[#0D9488] dark:text-[#017CEE]' },
@@ -180,7 +180,7 @@ export const TECH_ICON_REGISTRY = [
   { key: 'prometheus', label: 'Prometheus', icon: SiPrometheus, color: 'text-[#EA580C] dark:text-[#E6522C]' },
   { key: 'supabase', label: 'Supabase', icon: SiSupabase, color: 'text-[#059669] dark:text-[#3ECF8E]' },
 
-  // ─── 💻 FRONTEND & UI ───
+  // frontend tools
   { key: 'react', label: 'React.js', icon: SiReact, color: 'text-[#0284C7] dark:text-[#61DAFB]' },
   { key: 'nextjs', label: 'Next.js', icon: SiNextdotjs, color: 'text-slate-900 dark:text-white' },
   { key: 'javascript', label: 'JavaScript (JS)', icon: SiJavascript, color: 'text-[#D97706] dark:text-[#F7DF1E]' },
@@ -196,12 +196,12 @@ export const TECH_ICON_REGISTRY = [
   { key: 'angular', label: 'Angular', icon: SiAngular, color: 'text-[#DC2626] dark:text-[#DD0031]' },
   { key: 'svelte', label: 'Svelte', icon: SiSvelte, color: 'text-[#EA580C] dark:text-[#FF3E00]' },
 
-  // ─── 📡 REALTIME & MESSAGING ───
+  // realtime and messaging
   { key: 'socketio', label: 'Socket.IO', icon: SiSocketdotio, color: 'text-slate-900 dark:text-white' },
   { key: 'websocket', label: 'WebSockets (WS)', icon: Radio, color: 'text-[#0284C7] dark:text-[#38BDF8]' },
   { key: 'rabbitmq', label: 'RabbitMQ', icon: SiRabbitmq, color: 'text-[#EA580C] dark:text-[#FF6600]' },
 
-  // ─── ⚙️ BACKEND & CORE ───
+  // backend tools
   { key: 'nodejs', label: 'Node.js', icon: SiNodedotjs, color: 'text-[#16A34A] dark:text-[#5FA04E]' },
   { key: 'express', label: 'Express.js', icon: SiExpress, color: 'text-slate-900 dark:text-slate-100' },
   { key: 'python', label: 'Python', icon: SiPython, color: 'text-[#2563EB] dark:text-[#3776AB]' },
@@ -218,14 +218,14 @@ export const TECH_ICON_REGISTRY = [
   { key: 'restapi', label: 'REST API', icon: SiOpenapiinitiative, color: 'text-[#16A34A] dark:text-[#6BA539]' },
   { key: 'microservices', label: 'Microservices', icon: Cpu, color: 'text-[#4F46E5] dark:text-[#818CF8]' },
 
-  // ─── 🗄️ DATABASES & ORM ───
+  // databases
   { key: 'mongodb', label: 'MongoDB', icon: SiMongodb, color: 'text-[#15803D] dark:text-[#47A248]' },
   { key: 'postgresql', label: 'PostgreSQL', icon: SiPostgresql, color: 'text-[#1D4ED8] dark:text-[#4169E1]' },
   { key: 'mysql', label: 'MySQL', icon: SiMysql, color: 'text-[#1E40AF] dark:text-[#4479A1]' },
   { key: 'redis', label: 'Redis / Caching', icon: SiRedis, color: 'text-[#DC2626] dark:text-[#DC382D]' },
   { key: 'prisma', label: 'Prisma ORM', icon: SiPrisma, color: 'text-slate-900 dark:text-white' },
 
-  // ─── 🚀 DEVOPS & CLOUD ───
+  // devops and cloud
   { key: 'docker', label: 'Docker', icon: SiDocker, color: 'text-[#0284C7] dark:text-[#2496ED]' },
   { key: 'kubernetes', label: 'Kubernetes', icon: SiKubernetes, color: 'text-[#2563EB] dark:text-[#326CE5]' },
   { key: 'git', label: 'Git', icon: SiGit, color: 'text-[#EA580C] dark:text-[#F05032]' },
@@ -237,7 +237,7 @@ export const TECH_ICON_REGISTRY = [
   { key: 'aws', label: 'AWS Cloud', icon: FaAws, color: 'text-[#D97706] dark:text-[#FF9900]' },
   { key: 'cicd', label: 'CI/CD Pipelines', icon: SiGithubactions, color: 'text-[#2563EB] dark:text-[#2088FF]' },
 
-  // ─── 🛡️ SECURITY & TESTING ───
+  // security and testing
   { key: 'ratelimit', label: 'Rate Limiting', icon: Gauge, color: 'text-[#D97706] dark:text-[#F59E0B]' },
   { key: 'jwt', label: 'JWT (JSON Web Token)', icon: SiJsonwebtokens, color: 'text-[#9333EA] dark:text-[#D63AF9]' },
   { key: 'auth0', label: 'OAuth / Passkey / Auth', icon: SiAuth0, color: 'text-[#EA580C] dark:text-[#EB5424]' },

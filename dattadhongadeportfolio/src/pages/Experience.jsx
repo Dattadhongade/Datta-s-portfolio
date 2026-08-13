@@ -6,7 +6,7 @@ export const Experience = () => {
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 animate-in fade-in duration-500">
-      {/* Centered Top Badge */}
+      {/* total experience badge */}
       <div className="flex justify-center w-full">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-xs font-bold shadow-xs">
           <span className="relative flex h-2 w-2">
@@ -16,94 +16,105 @@ export const Experience = () => {
           <span>Total Work Experience: 0.7 Years (including internship)</span>
         </div>
       </div>
-      {/* Card container with bg — compact padding on mobile */}
-      <div className="glass-card rounded-2xl p-4 sm:p-8 border border-slate-200/80 dark:border-white/10">
-        {/* Single vertical timeline with 100% dead-centered dots and zero text overlap */}
-        <div className="relative pl-7 sm:pl-9">
-          {/* One vertical line */}
-          <div className="absolute left-3.5 sm:left-4 top-0 bottom-0 w-0.5 bg-cyan-200 dark:bg-cyan-500/25 -translate-x-1/2" />
 
-          <div className="space-y-6 sm:space-y-10">
-            {(experiences || []).map((exp) => (
-              <div key={exp.id} className="relative pl-5 sm:pl-6">
+      {/* experience list */}
+      <div className="space-y-4 sm:space-y-6">
+        {(experiences || []).map((exp) => (
+          <div key={exp.id} className="glass-card rounded-2xl p-5 sm:p-7 border border-slate-200/80 dark:border-white/10 space-y-4">
+            {/* company info */}
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h3 className="text-base sm:text-lg font-bold italic tracking-tight text-slate-900 dark:text-white">
+                {exp.company}
+              </h3>
+              {exp.duration && (
+                <span className="text-xs sm:text-sm font-semibold italic text-cyan-600 dark:text-cyan-400">
+                  {exp.duration}
+                </span>
+              )}
+              {exp.location && (
+                <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">
+                  ({exp.location})
+                </span>
+              )}
+            </div>
 
-                {/* Company-level dot — 100% dead-centered on the vertical line */}
-                <span className="absolute -left-5 sm:-left-6 top-1.5 w-3.5 h-3.5 rounded-full bg-cyan-500 dark:bg-cyan-400 ring-4 ring-white dark:ring-[#080b14] shadow-xs z-10" />
+            {/* timeline container */}
+            <div className="relative ml-3 sm:ml-5 pl-6 space-y-6 pt-1">
+              {/* timeline line */}
+              <div className="absolute left-1.5 top-2.5 bottom-2 w-0.5 bg-cyan-400/35 dark:bg-cyan-500/35 -translate-x-1/2" />
 
-                {/* ── MAIN POINT: Company name (bigger, bolder) ── */}
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mb-0.5">
-                  <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">{exp.company}</span>
-                  <span className="text-xs text-cyan-600 dark:text-cyan-400 font-semibold">{exp.duration}</span>
-                </div>
+              {(exp.roles || []).map((role, rIdx) => {
+                const rawDesc = role.description || (Array.isArray(role.achievements) ? role.achievements.join('\n') : (role.achievements || ''));
+                const descLines = rawDesc
+                  ? rawDesc.split('\n').map((l) => l.trim()).filter(Boolean)
+                  : [];
+                const isBulletList = descLines.length > 1 || descLines.some((l) => l.startsWith('•') || l.startsWith('-') || l.startsWith('*'));
 
-                {/* Location — muted beneath company */}
-                {exp.location && (
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mb-3 font-medium">
-                    {exp.location}
-                  </p>
-                )}
+                const rawTech = role.technologies || [];
+                const techList = Array.isArray(rawTech)
+                  ? rawTech
+                  : typeof rawTech === 'string'
+                  ? rawTech.split(',').map((s) => s.trim()).filter(Boolean)
+                  : [];
 
-                {/* ── SUB POINTS: Roles (indented, smaller) ── */}
-                <div className="space-y-4 sm:space-y-5">
-                  {(exp.roles || []).map((role, rIdx) => (
-                    <div key={rIdx} className="flex gap-3">
+                return (
+                  <div key={rIdx} className="relative space-y-1.5">
+                    {/* timeline dot */}
+                    <span className="absolute -left-4.5 top-1.5 w-2.5 h-2.5 rounded-full bg-cyan-400 dark:bg-cyan-400 ring-2 ring-white dark:ring-[#080b14] shadow-xs z-10 -translate-x-1/2" />
 
-                      {/* Distinct Role Bullet Dot — Vibrant Indigo color */}
-                      <span className="mt-1.5 w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 ring-2 ring-indigo-500/20 shrink-0" />
-
-                      <div className="space-y-1 min-w-0">
-
-                        {/* Role title + type — clearly secondary to company */}
-                        <div className="flex flex-wrap items-baseline gap-x-2">
-                          <span className="text-sm font-bold italic text-slate-800 dark:text-slate-100">{role.title}</span>
-                          <span className="text-xs font-medium text-slate-400 dark:text-slate-500">{role.type}</span>
-                        </div>
-
-                        {/* Duration */}
-                        <p className="text-xs text-slate-400 dark:text-slate-500">{role.duration}</p>
-
-                        {/* Description */}
-                        {role.description && (
-                          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed pt-0.5">
-                            {role.description}
-                          </p>
-                        )}
-
-                        {/* Achievements */}
-                        {role.achievements && role.achievements.length > 0 && (
-                          <ul className="pt-1 space-y-1 pl-3.5">
-                            {role.achievements.map((ach, aIdx) => (
-                              <li key={aIdx} className="text-xs text-slate-600 dark:text-slate-400 list-disc leading-relaxed">
-                                {ach}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-
-                        {/* Tech tags */}
-                        {role.technologies && role.technologies.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 pt-2">
-                            {role.technologies.map((tech, tIdx) => (
-                              <span
-                                key={tIdx}
-                                className="text-[10px] px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 font-semibold"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                      </div>
+                    {/* role and type */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="text-sm sm:text-base font-bold italic text-slate-900 dark:text-white">
+                        {role.title}
+                      </h4>
+                      {role.type && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-700 dark:text-purple-300 text-[10px] sm:text-xs font-semibold border border-purple-500/20">
+                          {role.type}
+                        </span>
+                      )}
                     </div>
-                  ))}
-                </div>
 
-              </div>
-            ))}
+                    {/* duration */}
+                    {role.duration && (
+                      <p className="text-xs italic text-cyan-600/90 dark:text-cyan-400/90 font-medium">
+                        {role.duration}
+                      </p>
+                    )}
+
+                    {/* description */}
+                    {descLines.length > 0 && (
+                      <div className="space-y-1 pt-0.5">
+                        {descLines.map((line, lIdx) => {
+                          const cleanText = line.replace(/^[•\-\*]\s*/, '');
+                          return (
+                            <p key={lIdx} className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed flex items-start gap-2">
+                              {isBulletList && <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />}
+                              <span>{cleanText}</span>
+                            </p>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* tech stack */}
+                    {techList.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1.5">
+                        {techList.map((tech, tIdx) => (
+                          <span
+                            key={tIdx}
+                            className="text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-semibold"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-
+        ))}
       </div>
     </div>
   );
