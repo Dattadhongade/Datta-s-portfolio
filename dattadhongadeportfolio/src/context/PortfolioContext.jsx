@@ -6,7 +6,7 @@ const PortfolioContext = createContext();
 const initialDefaultData = {
   profile: {
     name: "Datta Dhongade",
-    role: "Full Stack Engineer",
+    role: "Full Stack Developer",
     location: "Nashik, India",
     email: "dattadhongade@gmail.com",
     bioParagraph1: "Hello! I'm Datta Dhongade, a Full Stack Software Engineer based in Nashik, India. I specialize in building robust, performant web applications with clean frontend user interfaces and scalable backend architectures using React.js, Node.js, Express.js, MongoDB, and MySQL.",
@@ -29,7 +29,7 @@ const initialDefaultData = {
     { id: 4, label: "Production Delivery", value: "100%", color: "text-purple-600 dark:text-purple-400", border: "border-purple-500/20" }
   ],
   techPills: [
-    "React.js", "Node.js", "TypeScript", "Express.js", "Tailwind CSS", 
+    "React.js", "Node.js", "TypeScript", "Express.js", "Tailwind CSS",
     "GraphQL", "MongoDB", "MySQL", "Docker", "RabbitMQ", "Passkey / WebAuthn", "Git"
   ],
   capabilities: [
@@ -349,6 +349,59 @@ export const PortfolioProvider = ({ children }) => {
   const [backendConnected, setBackendConnected] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Authentication State
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    return Boolean(localStorage.getItem('admin_token'));
+  });
+  const [adminUser, setAdminUser] = useState(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Verify Admin JWT token session on mount
+  useEffect(() => {
+    const verifySession = async () => {
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        setIsAdminAuthenticated(false);
+        setAdminUser(null);
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        const res = await api.get('/auth/me');
+        if (res.success && res.user) {
+          setIsAdminAuthenticated(true);
+          setAdminUser(res.user);
+        } else {
+          localStorage.removeItem('admin_token');
+          setIsAdminAuthenticated(false);
+          setAdminUser(null);
+        }
+      } catch (err) {
+        if (!localStorage.getItem('admin_token')) {
+          setIsAdminAuthenticated(false);
+          setAdminUser(null);
+        }
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    verifySession();
+  }, []);
+
+  const loginAdmin = (token, user) => {
+    if (token) localStorage.setItem('admin_token', token);
+    setIsAdminAuthenticated(true);
+    if (user) setAdminUser(user);
+  };
+
+  const logoutAdmin = () => {
+    localStorage.removeItem('admin_token');
+    setIsAdminAuthenticated(false);
+    setAdminUser(null);
+  };
+
   // Fetch initial data from backend API on mount — backend ALWAYS wins over localStorage
   useEffect(() => {
     const fetchBackendData = async () => {
@@ -420,12 +473,12 @@ export const PortfolioProvider = ({ children }) => {
         },
         body: JSON.stringify(data)
       })
-      .then(res => {
-        if (res.ok) {
-          setBackendConnected(prev => prev ? prev : true);
-        }
-      })
-      .catch(() => setBackendConnected(prev => !prev ? prev : false));
+        .then(res => {
+          if (res.ok) {
+            setBackendConnected(prev => prev ? prev : true);
+          }
+        })
+        .catch(() => setBackendConnected(prev => !prev ? prev : false));
     }, 800);
 
     return () => clearTimeout(timeout);
@@ -517,7 +570,7 @@ export const PortfolioProvider = ({ children }) => {
 
       try {
         localStorage.setItem("portfolio_master_data_v3", JSON.stringify(updated));
-      } catch (e) {}
+      } catch (e) { }
 
       const token = localStorage.getItem('admin_token');
       if (token) {
@@ -529,10 +582,10 @@ export const PortfolioProvider = ({ children }) => {
           },
           body: JSON.stringify(updated)
         })
-        .then(res => {
-          if (res.ok) setBackendConnected(true);
-        })
-        .catch(err => console.error("Profile sync failed:", err));
+          .then(res => {
+            if (res.ok) setBackendConnected(true);
+          })
+          .catch(err => console.error("Profile sync failed:", err));
       }
 
       return updated;
@@ -874,6 +927,11 @@ export const PortfolioProvider = ({ children }) => {
   const contextValue = useMemo(() => ({
     ...data,
     backendConnected,
+    isAdminAuthenticated,
+    adminUser,
+    isCheckingAuth,
+    loginAdmin,
+    logoutAdmin,
     uploadImage,
     sendContactForm,
     updateProfile,
@@ -911,7 +969,7 @@ export const PortfolioProvider = ({ children }) => {
     updateMessageRemark,
     deleteMessage,
     resetToDefaults
-  }), [data, backendConnected]);
+  }), [data, backendConnected, isAdminAuthenticated, adminUser, isCheckingAuth]);
 
   return (
     <PortfolioContext.Provider value={contextValue}>

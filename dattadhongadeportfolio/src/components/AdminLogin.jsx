@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, User, Eye, EyeOff, KeyRound, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
+import { Lock, User, Eye, EyeOff, AlertTriangle, CheckCircle2, ArrowRight, X } from 'lucide-react';
 import { api } from '../services';
 
 export default function AdminLogin({ onLoginSuccess }) {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +33,7 @@ export default function AdminLogin({ onLoginSuccess }) {
         setSuccessMsg('Authentication successful! Initializing Control Panel...');
         setTimeout(() => {
           if (onLoginSuccess) {
-            onLoginSuccess(res.user);
+            onLoginSuccess(res.user, res.token);
           }
         }, 800);
       } else {
@@ -43,36 +46,41 @@ export default function AdminLogin({ onLoginSuccess }) {
     }
   };
 
-  return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4 relative overflow-hidden">
+  return createPortal(
+    <div className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
       {/* Background ambient lighting */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/15 dark:bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/20 dark:bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
 
       {/* Main Glassmorphic Login Card */}
-      <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl p-6 sm:p-8 relative z-10">
+      <div className="w-full max-w-md bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-2xl border border-slate-200/80 dark:border-white/10 shadow-2xl p-6 sm:p-8 relative z-10">
         
-        {/* Security Header */}
+        {/* Close / Return to Portfolio Button */}
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+          title="Return to Portfolio"
+          aria-label="Close"
+        >
+          <X size={18} />
+        </button>
+
+        {/* Security Header with Favicon Icon */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-tr from-indigo-600 to-cyan-500 text-white shadow-lg shadow-indigo-500/30 mb-4 animate-pulse">
-            <ShieldCheck size={36} />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-2.5 shadow-lg shadow-cyan-500/10 mb-4">
+            <img 
+              src="/favicon.png" 
+              alt="Favicon" 
+              className="w-10 h-10 object-contain drop-shadow-md" 
+            />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Admin Authentication
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Datta's Portfolio Control Panel
           </p>
-
-          {/* Security Pills */}
-          <div className="flex items-center justify-center gap-2 mt-3 text-[11px] font-mono text-slate-600 dark:text-slate-400">
-            <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 flex items-center gap-1">
-              <KeyRound size={12} className="text-cyan-500" /> JWT Encrypted
-            </span>
-            <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 flex items-center gap-1">
-              <Lock size={12} className="text-emerald-500" /> Rate Limited
-            </span>
-          </div>
         </div>
 
         {/* Alert Notifications */}
@@ -132,7 +140,7 @@ export default function AdminLogin({ onLoginSuccess }) {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -161,16 +169,21 @@ export default function AdminLogin({ onLoginSuccess }) {
               </>
             )}
           </button>
+
+          {/* Return link */}
+          <div className="text-center pt-2">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="text-xs text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors cursor-pointer"
+            >
+              ← Return to Portfolio
+            </button>
+          </div>
         </form>
 
-        {/* Security Footer Notice */}
-        <div className="mt-6 pt-4 border-t border-slate-200/60 dark:border-slate-800/60 text-center">
-          <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            Protected by MongoDB Security, Bcrypt Password Hashing, & Express NoSQL Injection Guards.
-          </p>
-        </div>
-
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

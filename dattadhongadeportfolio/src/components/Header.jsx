@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, User, FileText, Briefcase, Award, Shield, Send, LogOut } from "lucide-react";
+import { usePortfolio } from "../context/PortfolioContext";
 
 export default function Header({ setIsSidebarOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAdminAuthenticated, logoutAdmin } = usePortfolio();
 
   // Determine the title & icon based on current route
   const getHeaderInfo = () => {
@@ -24,7 +26,11 @@ export default function Header({ setIsSidebarOpen }) {
       case "/datta's_control_panel":
       case "/dattas_control_panel":
       case "/admin":
-        return { title: "Datta's Control Panel", subtitle: "Comprehensive Portfolio Configuration Suite", icon: <Shield size={20} className="text-amber-600 dark:text-amber-500" /> };
+        return { 
+          title: "Datta's Control Panel", 
+          subtitle: "Comprehensive Portfolio Configuration Suite", 
+          icon: <img src="/favicon.png" alt="Admin Favicon" className="w-5 h-5 rounded-md object-contain shrink-0 drop-shadow-xs" /> 
+        };
       default:
         return { title: "Portfolio", subtitle: "Datta Dhongade", icon: <User size={20} className="text-cyan-600 dark:text-cyan-500" /> };
     }
@@ -45,11 +51,11 @@ export default function Header({ setIsSidebarOpen }) {
     location.pathname === "/dattas_control_panel" ||
     location.pathname === "/admin";
 
+  const showLogoutButton = isAdminRoute && isAdminAuthenticated;
+
   const handleLogout = () => {
-    localStorage.removeItem("admin_token");
+    logoutAdmin();
     navigate("/");
-    // Reload to reset Admin auth state
-    window.location.reload();
   };
 
   return (
@@ -65,7 +71,7 @@ export default function Header({ setIsSidebarOpen }) {
         </button>
 
         <div className="flex items-center gap-3 flex-1 lg:flex-initial justify-center lg:justify-start">
-          <div className="hidden sm:flex p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+          <div className="flex p-2 sm:p-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 shrink-0">
             {headerInfo.icon}
           </div>
           <div className="text-center sm:text-left">
@@ -76,14 +82,14 @@ export default function Header({ setIsSidebarOpen }) {
           </div>
         </div>
 
-        {/* Spacer on mobile to keep title centered when hamburger is on left */}
-        {!isAdminRoute && <div className="w-9 lg:hidden" />}
+        {/* Spacer on mobile when logout is not shown */}
+        {!showLogoutButton && <div className="w-9 lg:hidden" />}
 
-        {/* Logout button inline on mobile (admin only) */}
-        {isAdminRoute && (
+        {/* Logout button inline on mobile (shown ONLY when admin is logged in) */}
+        {showLogoutButton && (
           <button
             onClick={handleLogout}
-            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-xs font-semibold transition-all cursor-pointer shrink-0"
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-xs font-semibold transition-all cursor-pointer shrink-0 shadow-xs"
           >
             <LogOut size={14} />
             <span>Log Out</span>
@@ -91,8 +97,8 @@ export default function Header({ setIsSidebarOpen }) {
         )}
       </div>
 
-      {/* Right side: nav tabs OR logout button */}
-      {isAdminRoute ? (
+      {/* Right side: logout button (ONLY after login) OR navigation tabs (ONLY on normal routes) */}
+      {showLogoutButton ? (
         <button
           onClick={handleLogout}
           className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-sm font-semibold transition-all cursor-pointer shadow-xs hover:border-rose-500/40"
@@ -100,7 +106,7 @@ export default function Header({ setIsSidebarOpen }) {
           <LogOut size={15} />
           <span>Log Out</span>
         </button>
-      ) : (
+      ) : isAdminRoute ? null : (
         <nav className="w-full lg:w-auto overflow-x-auto no-scrollbar py-0.5 max-w-full min-w-0 flex justify-start sm:justify-center">
           <ul className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-xl sm:rounded-2xl bg-slate-100/90 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shrink-0">
             {navItems.map((item) => {
@@ -109,12 +115,15 @@ export default function Header({ setIsSidebarOpen }) {
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-1.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold sm:font-medium transition-all duration-200 whitespace-nowrap ${isActive
-                        ? 'bg-white dark:bg-cyan-500/20 text-black dark:text-cyan-300 border border-slate-300 dark:border-cyan-500/40 shadow-xs font-bold'
-                        : 'text-black dark:text-slate-400 hover:text-cyan-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-white/5 border border-transparent'
-                      }`}
+                    className={`flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-1.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold sm:font-medium transition-all duration-200 whitespace-nowrap ${
+                      isActive
+                        ? "bg-white dark:bg-cyan-500/20 text-black dark:text-cyan-300 border border-slate-300 dark:border-cyan-500/40 shadow-xs font-bold"
+                        : "text-black dark:text-slate-400 hover:text-cyan-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-white/5 border border-transparent"
+                    }`}
                   >
-                    <span className={isActive ? 'text-cyan-600 dark:text-cyan-300' : 'text-slate-500 dark:text-slate-400'}>{item.icon}</span>
+                    <span className={isActive ? "text-cyan-600 dark:text-cyan-300" : "text-slate-500 dark:text-slate-400"}>
+                      {item.icon}
+                    </span>
                     {item.label}
                   </Link>
                 </li>

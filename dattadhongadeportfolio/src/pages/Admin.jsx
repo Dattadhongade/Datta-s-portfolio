@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import AdminLogin from '../components/AdminLogin';
-import { api } from '../services';
 
 import AdminToast from './admin/AdminToast';
 import AdminProfileTab from './admin/AdminProfileTab';
@@ -78,55 +77,23 @@ export default function Admin() {
     updateMessageRemark,
     deleteMessage,
     resetToDefaults,
-    uploadImage
+    uploadImage,
+    isAdminAuthenticated,
+    adminUser,
+    isCheckingAuth,
+    loginAdmin,
+    logoutAdmin
   } = usePortfolio();
 
   const [activeTab, setActiveTab] = useState('profile');
   const [toast, setToast] = useState(null);
 
-  // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [adminUser, setAdminUser] = useState(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
   };
 
-  // Verify Admin JWT token session on component mount
-  useEffect(() => {
-    const verifySession = async () => {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        setIsAuthenticated(false);
-        setIsCheckingAuth(false);
-        return;
-      }
-
-      try {
-        const res = await api.get('/auth/me');
-        if (res.success && res.user) {
-          setIsAuthenticated(true);
-          setAdminUser(res.user);
-        } else {
-          localStorage.removeItem('admin_token');
-          setIsAuthenticated(false);
-        }
-      } catch (err) {
-        localStorage.removeItem('admin_token');
-        setIsAuthenticated(false);
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    };
-
-    verifySession();
-  }, []);
-
   const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    setIsAuthenticated(false);
-    setAdminUser(null);
+    logoutAdmin();
     showToast('Logged out of Admin Control Panel successfully.');
   };
 
@@ -422,13 +389,12 @@ export default function Admin() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAdminAuthenticated) {
     return (
       <AdminLogin
-        onLoginSuccess={(user) => {
-          setIsAuthenticated(true);
-          setAdminUser(user);
-          showToast(`Welcome back, ${user.username || 'Admin'}!`);
+        onLoginSuccess={(user, token) => {
+          loginAdmin(token || localStorage.getItem('admin_token'), user);
+          showToast(`Welcome back, ${user?.username || 'Admin'}!`);
         }}
       />
     );
