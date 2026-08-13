@@ -1,0 +1,21 @@
+{
+  "name": "Dattatray Dhongade | Full Stack Software Engineer",
+  "short_name": "Datta Portfolio",
+  "description": "Portfolio of Dattatray Dhongade - Full Stack Software Engineer specializing in React, Node.js, TypeScript & Modern Web.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080b14",
+  "theme_color": "#080b14",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

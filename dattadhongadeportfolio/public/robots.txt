@@ -1,0 +1,8 @@
+# Robots.txt for Dattatray Dhongade Portfolio
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://dattadhongade.dev/sitemap.xml
