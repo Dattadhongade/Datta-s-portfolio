@@ -241,6 +241,14 @@ const initialDefaultData = {
       { name: "Python (Basics)", progress: 75, level: "Proficient" },
       { name: "C++", progress: 78, level: "Proficient" },
     ],
+    "Data Analytics & BI": [
+      { name: "Power BI", progress: 90, level: "Expert" },
+      { name: "Tableau", progress: 85, level: "Advanced" },
+      { name: "Pandas & NumPy", progress: 88, level: "Advanced" },
+      { name: "MS Excel (Advanced Analytics)", progress: 92, level: "Expert" },
+      { name: "Apache Spark / PySpark", progress: 80, level: "Proficient" },
+      { name: "Google Analytics & KPI", progress: 86, level: "Advanced" },
+    ],
     "DevOps & Tools": [
       { name: "Docker & Containers", progress: 82, level: "Advanced" },
       { name: "Git & GitHub Workflows", progress: 94, level: "Mastery" },
@@ -660,6 +668,13 @@ export const PortfolioProvider = ({ children }) => {
     }));
   };
 
+  const updateLifestyle = (id, updatedItem) => {
+    setData((prev) => ({
+      ...prev,
+      lifestyle: (prev.lifestyle || []).map((l) => (l.id === id ? { ...l, ...updatedItem } : l))
+    }));
+  };
+
   const deleteLifestyle = (id) => {
     setData((prev) => ({
       ...prev,
@@ -687,6 +702,76 @@ export const PortfolioProvider = ({ children }) => {
       ...prev,
       projects: prev.projects.filter((p) => p.id !== id)
     }));
+  };
+
+  const reorderProjects = (fromIndex, toIndex) => {
+    setData((prev) => {
+      const list = [...(prev.projects || [])];
+      if (fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length) return prev;
+      const [moved] = list.splice(fromIndex, 1);
+      list.splice(toIndex, 0, moved);
+      return { ...prev, projects: list };
+    });
+  };
+
+  const moveProject = (index, direction) => {
+    reorderProjects(index, index + direction);
+  };
+
+  const reorderCapabilities = (fromIndex, toIndex) => {
+    setData((prev) => {
+      const list = [...(prev.capabilities || [])];
+      if (fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length) return prev;
+      const [moved] = list.splice(fromIndex, 1);
+      list.splice(toIndex, 0, moved);
+      return { ...prev, capabilities: list };
+    });
+  };
+
+  const moveCapability = (index, direction) => {
+    reorderCapabilities(index, index + direction);
+  };
+
+  const reorderLifestyle = (fromIndex, toIndex) => {
+    setData((prev) => {
+      const list = [...(prev.lifestyle || [])];
+      if (fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length) return prev;
+      const [moved] = list.splice(fromIndex, 1);
+      list.splice(toIndex, 0, moved);
+      return { ...prev, lifestyle: list };
+    });
+  };
+
+  const moveLifestyle = (index, direction) => {
+    reorderLifestyle(index, index + direction);
+  };
+
+  const reorderEducations = (fromIndex, toIndex) => {
+    setData((prev) => {
+      const list = [...(prev.educations || [])];
+      if (fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length) return prev;
+      const [moved] = list.splice(fromIndex, 1);
+      list.splice(toIndex, 0, moved);
+      return { ...prev, educations: list };
+    });
+  };
+
+  const moveEducation = (index, direction) => {
+    reorderEducations(index, index + direction);
+  };
+
+  const reorderExperiences = (fromIndex, toIndex) => {
+    setData((prev) => {
+      const list = [...(prev.experiences || [])];
+      if (fromIndex < 0 || toIndex < 0 || fromIndex >= list.length || toIndex >= list.length) return prev;
+      const [moved] = list.splice(fromIndex, 1);
+      list.splice(toIndex, 0, moved);
+      return { ...prev, experiences: list };
+    });
+  };
+
+  const moveExperience = (index, direction) => {
+    reorderExperiences(index, index + direction);
   };
 
   const addProjectCategory = (category) => {
@@ -944,10 +1029,21 @@ export const PortfolioProvider = ({ children }) => {
     updateCapability,
     deleteCapability,
     addLifestyle,
+    updateLifestyle,
     deleteLifestyle,
     addProject,
     updateProject,
     deleteProject,
+    reorderProjects,
+    moveProject,
+    reorderCapabilities,
+    moveCapability,
+    reorderLifestyle,
+    moveLifestyle,
+    reorderEducations,
+    moveEducation,
+    reorderExperiences,
+    moveExperience,
     addProjectCategory,
     updateProjectCategory,
     deleteProjectCategory,

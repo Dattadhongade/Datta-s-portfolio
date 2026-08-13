@@ -14,12 +14,60 @@ import {
   Zap,
   Globe,
   Layout,
-  Smartphone
+  Smartphone,
+  Infinity,
+  Workflow,
+  Webhook,
+  Network,
+  GitBranch,
+  Boxes,
+  Plug,
+  Braces,
+  Camera,
+  BookOpen,
+  Gamepad2,
+  Music,
+  Coffee,
+  Bike,
+  Plane,
+  Heart,
+  Trophy,
+  Sparkles,
+  Code
 } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { usePortfolio } from '../context/PortfolioContext';
 
-const getCapabilityIcon = (iconName, colorClass) => {
+const getCapabilityIcon = (iconName, colorClass, title = "") => {
+  const normIcon = (iconName || "").toLowerCase();
+  const normTitle = (title || "").toLowerCase();
+
+  // DevOps match
+  if (
+    normIcon === "devops" ||
+    normIcon === "infinity" ||
+    normIcon === "workflow" ||
+    normTitle.includes("devops") ||
+    normTitle.includes("ci/cd") ||
+    normTitle.includes("docker") ||
+    normTitle.includes("kubernetes")
+  ) {
+    return <Infinity className={colorClass} size={24} />;
+  }
+
+  // API match
+  if (
+    normIcon === "api" ||
+    normIcon === "webhook" ||
+    normIcon === "network" ||
+    normTitle.includes("api") ||
+    normTitle.includes("rest") ||
+    normTitle.includes("graphql") ||
+    normTitle.includes("endpoint")
+  ) {
+    return <Webhook className={colorClass} size={24} />;
+  }
+
   switch (iconName) {
     case "Code2": return <Code2 className={colorClass} size={24} />;
     case "Server": return <Server className={colorClass} size={24} />;
@@ -29,6 +77,15 @@ const getCapabilityIcon = (iconName, colorClass) => {
     case "Layers": return <Layers className={colorClass} size={24} />;
     case "Globe": return <Globe className={colorClass} size={24} />;
     case "Layout": return <Layout className={colorClass} size={24} />;
+    case "Infinity": return <Infinity className={colorClass} size={24} />;
+    case "Workflow": return <Workflow className={colorClass} size={24} />;
+    case "Webhook": return <Webhook className={colorClass} size={24} />;
+    case "Network": return <Network className={colorClass} size={24} />;
+    case "GitBranch": return <GitBranch className={colorClass} size={24} />;
+    case "Boxes": return <Boxes className={colorClass} size={24} />;
+    case "TerminalSquare": return <TerminalSquare className={colorClass} size={24} />;
+    case "Plug": return <Plug className={colorClass} size={24} />;
+    case "Braces": return <Braces className={colorClass} size={24} />;
     default: return <Code2 className={colorClass} size={24} />;
   }
 };
@@ -38,6 +95,17 @@ const getLifestyleIcon = (iconName) => {
     case "Dumbbell": return <Dumbbell size={18} />;
     case "Mountain": return <Mountain size={18} />;
     case "Film": return <Film size={18} />;
+    case "Camera": return <Camera size={18} />;
+    case "BookOpen": return <BookOpen size={18} />;
+    case "Gamepad2": return <Gamepad2 size={18} />;
+    case "Music": return <Music size={18} />;
+    case "Coffee": return <Coffee size={18} />;
+    case "Bike": return <Bike size={18} />;
+    case "Plane": return <Plane size={18} />;
+    case "Heart": return <Heart size={18} />;
+    case "Trophy": return <Trophy size={18} />;
+    case "Sparkles": return <Sparkles size={18} />;
+    case "Code": return <Code size={18} />;
     default: return <Zap size={18} />;
   }
 };
@@ -113,26 +181,26 @@ const About = () => {
           {capabilities.map((item) => (
             <div
               key={item.id}
-              className={`glass-card rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 group border border-slate-200/80 dark:border-white/10 ${item.accent || ''}`}
+              className={`glass-card rounded-2xl p-5 transition-all duration-200 group border border-slate-200/80 dark:border-white/10 ${item.accent || ''}`}
             >
-              <div>
-                <div className="flex items-center gap-3 mb-2.5">
-                  <div className={`p-2.5 rounded-xl ${item.glow || 'bg-cyan-500/10'} border border-slate-200/80 dark:border-white/10 group-hover:scale-105 transition-transform`}>
-                    {getCapabilityIcon(item.iconName, item.iconColor || "text-cyan-600 dark:text-cyan-400")}
-                  </div>
+              <div className="flex items-start gap-4">
+                <div className={`p-2.5 rounded-xl ${item.glow || 'bg-cyan-500/10'} border border-slate-200/80 dark:border-white/10 group-hover:scale-105 transition-transform shrink-0 mt-0.5`}>
+                  {getCapabilityIcon(item.iconName, item.iconColor || "text-cyan-600 dark:text-cyan-400", item.title)}
+                </div>
+                <div className="flex-1 min-w-0 space-y-2">
                   <div>
-                    <h4 className="fluid-h3 font-semibold text-black dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
+                    <h4 className="fluid-h3 font-semibold text-black dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors leading-snug">
                       {item.title}
                     </h4>
-                    <span className="fluid-xs font-medium text-cyan-700 dark:text-cyan-400/80">
+                    <span className="text-[10px] font-semibold text-cyan-700 dark:text-cyan-400/90 block mt-1 leading-normal">
                       {item.tagline}
                     </span>
                   </div>
-                </div>
 
-                <p className="fluid-sm text-black dark:text-slate-300 leading-relaxed font-normal mt-1">
-                  {item.description}
-                </p>
+                  <p className="fluid-sm text-black dark:text-slate-300 leading-relaxed font-normal pt-0.5">
+                    {item.description}
+                  </p>
+                </div>
               </div>
             </div>
           ))}

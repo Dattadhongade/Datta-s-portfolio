@@ -46,12 +46,23 @@ export default function Admin() {
     deleteCapability,
     lifestyle,
     addLifestyle,
+    updateLifestyle,
     deleteLifestyle,
     projects,
     projectCategories,
     addProject,
     updateProject,
     deleteProject,
+    reorderProjects,
+    moveProject,
+    reorderCapabilities,
+    moveCapability,
+    reorderLifestyle,
+    moveLifestyle,
+    reorderEducations,
+    moveEducation,
+    reorderExperiences,
+    moveExperience,
     addProjectCategory,
     updateProjectCategory,
     deleteProjectCategory,
@@ -473,6 +484,8 @@ export default function Admin() {
           handleAddProject={handleAddProject}
           handleUpdateProject={handleUpdateProject}
           deleteProject={deleteProject}
+          moveProject={moveProject}
+          reorderProjects={reorderProjects}
           addProjectCategory={addProjectCategory}
           updateProjectCategory={updateProjectCategory}
           deleteProjectCategory={deleteProjectCategory}
@@ -523,6 +536,8 @@ export default function Admin() {
           handleAddEdu={handleAddEducation}
           handleUpdateEdu={handleSaveEditEdu}
           deleteEducation={deleteEducation}
+          moveEducation={moveEducation}
+          reorderEducations={reorderEducations}
           showToast={showToast}
         />
       )}
@@ -544,9 +559,14 @@ export default function Admin() {
           addCapability={addCapability}
           updateCapability={updateCapability}
           deleteCapability={deleteCapability}
+          moveCapability={moveCapability}
+          reorderCapabilities={reorderCapabilities}
           lifestyle={lifestyle}
           addLifestyle={addLifestyle}
+          updateLifestyle={updateLifestyle}
           deleteLifestyle={deleteLifestyle}
+          moveLifestyle={moveLifestyle}
+          reorderLifestyle={reorderLifestyle}
           showToast={showToast}
         />
       )}
@@ -562,6 +582,8 @@ export default function Admin() {
           handleAddExp={handleAddExp}
           deleteExperience={deleteExperience}
           updateExperience={updateExperience}
+          moveExperience={moveExperience}
+          reorderExperiences={reorderExperiences}
           showToast={showToast}
         />
       )}

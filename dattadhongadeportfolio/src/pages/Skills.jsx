@@ -1,12 +1,17 @@
 import React, { useState } from "react";
 import {
   Code2, Server, BrainCircuit, TerminalSquare,
-  ShieldCheck, Database, TestTube2, Wrench, Award
+  ShieldCheck, Database, TestTube2, Wrench, Award,
+  BarChart3
 } from "lucide-react";
 import { usePortfolio } from "../context/PortfolioContext";
 import TechIcon from "../components/TechIcon";
 
 const getCategoryIcon = (category) => {
+  const norm = (category || "").toLowerCase();
+  if (norm.includes("data") || norm.includes("analytic") || norm.includes("bi") || norm.includes("insight")) {
+    return <BarChart3 className="text-amber-600 dark:text-amber-400" size={16} />;
+  }
   switch (category) {
     case "Frontend": return <Code2 className="text-cyan-600 dark:text-cyan-400" size={16} />;
     case "Backend": return <Server className="text-indigo-600 dark:text-indigo-400" size={16} />;

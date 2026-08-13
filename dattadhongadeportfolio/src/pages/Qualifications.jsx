@@ -34,10 +34,10 @@ const Qualifications = () => {
             {educationList.map((edu) => (
               <div key={edu.id || edu.degree} className="relative pl-4 sm:pl-5">
 
-                {/* Dot — 100% dead-centered on line */}
-                <span className="absolute left-[-1.15rem] sm:left-[-1.4rem] top-1.5 w-3 h-3 rounded-full bg-indigo-500 dark:bg-indigo-400 ring-4 ring-white dark:ring-[#080b14] shadow-xs z-10" />
+                {/* Dot */}
+                <span className="absolute left-[-1.2rem] sm:left-[-1.6rem] top-1.5 w-3 h-3 rounded-full bg-indigo-500 dark:bg-indigo-400 ring-4 ring-white dark:ring-[#080b14] shadow-xs z-10" />
 
-                {/* ── MAIN POINT: Degree (compact text size on mobile) ── */}
+                {/* MAIN POINT: Degree  */}
                 <div className="flex flex-wrap justify-between items-start gap-1.5 mb-1">
                   <h3 className="text-sm sm:text-base md:text-lg font-bold sm:font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug">
                     {edu.degree}

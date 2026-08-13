@@ -1,6 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Briefcase, Plus, Edit2, Trash2, Check, Upload, ExternalLink, X, Eye, ArrowRight } from 'lucide-react';
+import {
+  Briefcase,
+  Plus,
+  Edit2,
+  Trash2,
+  Check,
+  Upload,
+  ExternalLink,
+  X,
+  Eye,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2
+} from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 
 export default function AdminProjectsTab({
@@ -24,12 +38,21 @@ export default function AdminProjectsTab({
   handleAddProject,
   handleUpdateProject,
   deleteProject,
+  moveProject,
+  reorderProjects,
   addProjectCategory,
   updateProjectCategory,
   deleteProjectCategory,
   uploadImage,
   showToast
 }) {
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const formatExternalUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+  };
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -147,12 +170,12 @@ export default function AdminProjectsTab({
 
       {/* ─── Projects Grid — Public Card Style ─── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {projects.map((project) => (
+        {projects.map((project, idx) => (
           <div
             key={project.id}
             className="glass-card rounded-2xl overflow-hidden flex flex-col justify-between group hover:-translate-y-1 transition-all duration-200 border border-slate-200/80 dark:border-white/10 hover:border-cyan-500/40"
           >
-            {/* Image + Overlays */}
+            {/* Image + Overlays (Clean — Only Category Badge) */}
             <div className="w-full aspect-16/10 bg-slate-100 dark:bg-slate-900 overflow-hidden relative">
               <img
                 src={project.image || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop"}
@@ -165,7 +188,7 @@ export default function AdminProjectsTab({
 
               {/* Category badge top-left */}
               <div className="absolute top-3 left-3">
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/95 dark:bg-black/60 backdrop-blur-md text-black dark:text-cyan-300 border border-slate-200 dark:border-cyan-500/30 shadow-xs">
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/95 dark:bg-black/70 backdrop-blur-md text-black dark:text-cyan-300 border border-slate-200 dark:border-cyan-500/30 shadow-xs">
                   {project.category}
                 </span>
               </div>
@@ -194,7 +217,7 @@ export default function AdminProjectsTab({
               </div>
             </div>
 
-            {/* Card Content */}
+            {/* Card Content with Solid Typography matching public page */}
             <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
               <div className="space-y-1.5">
                 <h3 className="fluid-h3 font-semibold text-black dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors line-clamp-1">
@@ -205,50 +228,94 @@ export default function AdminProjectsTab({
                 </p>
               </div>
 
-              {/* Tech Tags */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {(project.tags || []).slice(0, 4).map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-black dark:text-slate-300 font-medium"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {(project.tags || []).length > 4 && (
-                  <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-black dark:text-slate-400 font-semibold">
-                    +{project.tags.length - 4}
-                  </span>
-                )}
-              </div>
-
-              {/* Action row */}
+              {/* Action row with Sequence in the Center */}
               <div className="pt-3 border-t border-slate-200/80 dark:border-white/5 flex items-center justify-between gap-2">
-                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {project.status || 'Published'}
-                </span>
+                {/* Left: Published Status & Details Button */}
                 <div className="flex items-center gap-2">
+                 
+                  <button
+                    type="button"
+                    onClick={() => setSelectedProject(project)}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:underline transition-colors cursor-pointer"
+                  >
+                    <span>Details</span>
+                    <ArrowRight size={12} />
+                  </button>
+                </div>
+
+                {/* Center: Sequence Controls (WITHOUT #) */}
+                <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-white/10 text-black dark:text-white border border-slate-200 dark:border-white/15 shadow-2xs">
+                  <button
+                    type="button"
+                    disabled={idx === 0}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (moveProject) moveProject(idx, -1);
+                      else if (reorderProjects) reorderProjects(idx, idx - 1);
+                      showToast(`Moved "${project.title}" up to position ${idx}`, 'success');
+                    }}
+                    className="p-1 text-slate-600 dark:text-slate-300 hover:text-cyan-500 disabled:opacity-25 disabled:hover:text-slate-400 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                    title="Move Left / Earlier"
+                  >
+                    <ChevronLeft size={13} />
+                  </button>
+                  <select
+                    value={idx}
+                    onChange={(e) => {
+                      const targetIdx = Number(e.target.value);
+                      if (targetIdx !== idx) {
+                        if (reorderProjects) reorderProjects(idx, targetIdx);
+                        showToast(`Shifted "${project.title}" to position ${targetIdx + 1}`, 'success');
+                      }
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-transparent text-cyan-600 dark:text-cyan-400 font-black text-[11px] px-1 focus:outline-none cursor-pointer text-center"
+                    title="Select sequence position"
+                  >
+                    {projects.map((_, pIdx) => (
+                      <option key={pIdx} value={pIdx} className="bg-white dark:bg-slate-900 text-black dark:text-white">
+                        {pIdx + 1}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={idx === projects.length - 1}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (moveProject) moveProject(idx, 1);
+                      else if (reorderProjects) reorderProjects(idx, idx + 1);
+                      showToast(`Moved "${project.title}" down to position ${idx + 2}`, 'success');
+                    }}
+                    className="p-1 text-slate-600 dark:text-slate-300 hover:text-cyan-500 disabled:opacity-25 disabled:hover:text-slate-400 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                    title="Move Right / Later"
+                  >
+                    <ChevronRight size={13} />
+                  </button>
+                </div>
+
+                {/* Right: Github & Demo Buttons */}
+                <div className="flex items-center gap-1.5">
                   {project.github && (
                     <a
-                      href={project.github.startsWith('http') ? project.github : `https://${project.github}`}
+                      href={formatExternalUrl(project.github)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-black dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white transition-colors"
                       title="Source Code"
                     >
-                      <FaGithub size={14} />
+                      <FaGithub size={13} />
                     </a>
                   )}
                   {project.demo && (
                     <a
-                      href={project.demo.startsWith('http') ? project.demo : `https://${project.demo}`}
+                      href={formatExternalUrl(project.demo)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-500/20 dark:hover:bg-cyan-500/30 border border-cyan-200 dark:border-cyan-500/30 text-black dark:text-cyan-300 text-xs font-bold transition-all"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-500/20 dark:hover:bg-cyan-500/30 border border-cyan-200 dark:border-cyan-500/30 text-black dark:text-cyan-300 text-xs font-bold transition-all"
                     >
                       <span>Demo</span>
-                      <ExternalLink size={12} />
+                      <ExternalLink size={11} />
                     </a>
                   )}
                 </div>
@@ -505,6 +572,124 @@ export default function AdminProjectsTab({
         </div>,
         document.body
       )}
+
+      {/* ─── PROJECT DETAIL MODAL (Matching Public Page) ─── */}
+      {selectedProject && createPortal(
+        <div 
+          className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setSelectedProject(null)}
+        >
+          <div 
+            className="glass-card max-w-3xl w-full rounded-2xl p-5 sm:p-7 space-y-5 border border-slate-200/80 dark:border-white/10 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Top Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 dark:border-white/10 pb-3">
+              <div className="space-y-1">
+                <h3 className="fluid-h2 font-semibold text-black dark:text-white">
+                  {selectedProject.title}
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-cyan-50 dark:bg-cyan-500/20 text-black dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/40 inline-block">
+                  {selectedProject.category}
+                </span>
+              </div>
+              <button 
+                onClick={() => setSelectedProject(null)}
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer shrink-0"
+                title="Close modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* 2-Column Grid Body */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 sm:gap-6 items-start">
+              {/* Left Column: Image Card */}
+              {selectedProject.image && (
+                <div className="sm:col-span-4 flex flex-col items-center gap-3">
+                  <div className="w-full aspect-square max-w-60 sm:max-w-none rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/10 bg-slate-100 dark:bg-slate-900/80 p-2.5 flex items-center justify-center shadow-lg relative group">
+                    <img 
+                      src={selectedProject.image} 
+                      alt={selectedProject.title} 
+                      className="w-full h-full object-contain rounded-xl transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Right Column: Full Details */}
+              <div className={`${selectedProject.image ? 'sm:col-span-8' : 'sm:col-span-12'} space-y-4`}>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overview</h4>
+                  <p className="fluid-body text-black dark:text-slate-300 leading-relaxed font-normal">
+                    {selectedProject.description}
+                  </p>
+                </div>
+
+                {/* Feature Highlights */}
+                {selectedProject.highlights && selectedProject.highlights.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-black dark:text-slate-400 uppercase tracking-wider">Key Architectural Features</h4>
+                    <div className="space-y-1.5">
+                      {selectedProject.highlights.map((point, idx) => (
+                        <div key={idx} className="flex items-start gap-2 fluid-sm text-black dark:text-slate-300">
+                          <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5" />
+                          <span>{point}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tech Stack Chips */}
+                {selectedProject.tags && selectedProject.tags.length > 0 && (
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-bold text-black dark:text-slate-400 uppercase tracking-wider">Technologies Used</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(selectedProject.tags || []).map((tag, idx) => (
+                        <span 
+                          key={idx} 
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-black dark:text-cyan-300 font-semibold"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
+                  {selectedProject.demo && (
+                    <a 
+                      href={formatExternalUrl(selectedProject.demo)} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex-1 py-2 px-3.5 rounded-xl bg-linear-to-r from-cyan-600 to-indigo-600 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-cyan-500/20 hover:opacity-95 transition-all"
+                    >
+                      <span>Launch Live Demo</span>
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
+                  {selectedProject.github && (
+                    <a 
+                      href={formatExternalUrl(selectedProject.github)} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex-1 py-2 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-black dark:text-slate-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all"
+                    >
+                      <FaGithub size={14} />
+                      <span>Source Code</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
     </div>
   );
 }
