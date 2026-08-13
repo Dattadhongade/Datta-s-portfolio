@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, FileText, ExternalLink, Download, Mail, Sun, Moon, X, Code2, MapPin, Send, Shield, Globe } from "lucide-react";
+import { Eye, FileText, ExternalLink, Download, Mail, Sun, Moon, X, Code2, MapPin, Send, Shield, Globe, Play } from "lucide-react";
 import { FaGithub, FaLinkedin, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import { SiLeetcode } from "react-icons/si";
 import { usePortfolio } from "../context/PortfolioContext";
 import heroDark from "../assets/hero.png";
 import heroLight from "../assets/hero.png";
 
-const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme }) => {
+const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onReplayIntro }) => {
   const navigate = useNavigate();
   const { profile, educations, education, skills, experiences } = usePortfolio();
   const [showPdfViewer, setShowPdfViewer] = useState(false);
@@ -120,26 +120,42 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme }) =
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
 
-        {/* Top Header: Animated Theme Switcher & Mobile Close */}
-        <div className="flex justify-between items-center p-4 border-b border-slate-200/80 dark:border-white/5">
-          <button
-            onClick={toggleTheme}
-            className="flex items-center gap-2 p-2 px-3 rounded-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-black dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-300 hover:border-cyan-400/40 transition-all cursor-pointer group active:scale-95 shadow-2xs"
-            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            aria-label="Toggle visual theme"
-          >
-            {isDarkMode ? (
-              <div key="sun" className="flex items-center gap-1.5 animate-theme-icon">
-                <Sun size={15} className="text-amber-400 group-hover:rotate-90 transition-transform duration-300" />
-                <span className="text-xs font-medium text-slate-300">Light</span>
-              </div>
-            ) : (
-              <div key="moon" className="flex items-center gap-1.5 animate-theme-icon">
-                <Moon size={15} className="text-indigo-600 group-hover:-rotate-12 transition-transform duration-300" />
-                <span className="text-xs font-semibold text-black">Dark</span>
-              </div>
+        {/* Top Header: Animated Theme Switcher, Intro Replay & Mobile Close */}
+        <div className="flex justify-between items-center p-4 border-b border-slate-200/80 dark:border-white/5 gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 p-2 px-3 rounded-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-black dark:text-slate-200 hover:text-cyan-600 dark:hover:text-cyan-300 hover:border-cyan-400/40 transition-all cursor-pointer group active:scale-95 shadow-2xs"
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              aria-label="Toggle visual theme"
+            >
+              {isDarkMode ? (
+                <div key="sun" className="flex items-center gap-1.5 animate-theme-icon">
+                  <Sun size={15} className="text-amber-400 group-hover:rotate-90 transition-transform duration-300" />
+                  <span className="text-xs font-medium text-slate-300">Light</span>
+                </div>
+              ) : (
+                <div key="moon" className="flex items-center gap-1.5 animate-theme-icon">
+                  <Moon size={15} className="text-indigo-600 group-hover:-rotate-12 transition-transform duration-300" />
+                  <span className="text-xs font-semibold text-black">Dark</span>
+                </div>
+              )}
+            </button>
+
+            {onReplayIntro && (
+              <button
+                onClick={() => {
+                  setIsSidebarOpen(false);
+                  onReplayIntro();
+                }}
+                className="flex items-center gap-1.5 p-2 px-2.5 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 transition-all cursor-pointer text-xs font-semibold shadow-2xs active:scale-95"
+                title="Replay VFX CGI Intro Animation"
+              >
+                <Play size={11} className="text-cyan-500 fill-cyan-500/30" />
+                <span className="text-[11px] font-mono">Intro</span>
+              </button>
             )}
-          </button>
+          </div>
 
           <button
             className="lg:hidden p-2 rounded-xl text-black dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
