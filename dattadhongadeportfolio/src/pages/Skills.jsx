@@ -66,7 +66,7 @@ const Skills = () => {
       </div>
 
       {/* Skills Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {activeSkillsList.map((skill, idx) => (
           <div
             key={idx}

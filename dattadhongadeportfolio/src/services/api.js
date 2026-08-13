@@ -1,4 +1,7 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const rawApiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = (typeof window !== 'undefined' && window.location.protocol === 'https:' && rawApiUrl.startsWith('http://') && !rawApiUrl.includes('localhost') && !rawApiUrl.includes('127.0.0.1'))
+  ? rawApiUrl.replace(/^http:\/\//i, 'https://')
+  : rawApiUrl;
 
 /**
  * Common fetch helper for API requests

@@ -50,8 +50,15 @@ export default function AdminProjectsTab({
 
   const formatExternalUrl = (url) => {
     if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `https://${url}`;
+    let trimmed = String(url).trim();
+    if (!trimmed || trimmed === '#') return '';
+    if (trimmed.startsWith('http://') && !trimmed.includes('localhost') && !trimmed.includes('127.0.0.1')) {
+      trimmed = trimmed.replace(/^http:\/\//i, 'https://');
+    }
+    if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) {
+      return trimmed;
+    }
+    return `https://${trimmed}`;
   };
   return (
     <div className="space-y-6">

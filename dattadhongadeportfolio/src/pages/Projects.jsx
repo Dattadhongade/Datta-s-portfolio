@@ -6,8 +6,11 @@ import { usePortfolio } from "../context/PortfolioContext";
 
 const formatExternalUrl = (url) => {
   if (!url) return "";
-  const trimmed = String(url).trim();
+  let trimmed = String(url).trim();
   if (!trimmed || trimmed === "#") return "";
+  if (trimmed.startsWith("http://") && !trimmed.includes("localhost") && !trimmed.includes("127.0.0.1")) {
+    trimmed = trimmed.replace(/^http:\/\//i, "https://");
+  }
   if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) {
     return trimmed;
   }

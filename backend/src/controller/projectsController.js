@@ -64,8 +64,11 @@ exports.uploadImage = (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, error: 'No file uploaded' });
   }
-  const host = req.get('host');
-  const protocol = req.protocol;
+  const host = req.get('host') || '';
+  let protocol = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : req.protocol);
+  if (host && !host.includes('localhost') && !host.includes('127.0.0.1')) {
+    protocol = 'https';
+  }
   const fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
   res.json({
     success: true,

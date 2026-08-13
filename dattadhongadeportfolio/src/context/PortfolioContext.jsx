@@ -3,6 +3,37 @@ import { api, API_BASE_URL, aboutApi, projectsApi, skillsApi, experienceApi, con
 
 const PortfolioContext = createContext();
 
+export const upgradeHttpUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('http://') && !trimmed.includes('localhost') && !trimmed.includes('127.0.0.1')) {
+    return trimmed.replace(/^http:\/\//i, 'https://');
+  }
+  return trimmed;
+};
+
+export const sanitizePortfolioUrls = (data) => {
+  if (!data || typeof data !== 'object') return data;
+  const clone = { ...data };
+  if (clone.profile) {
+    clone.profile = {
+      ...clone.profile,
+      resumeDownloadUrl: upgradeHttpUrl(clone.profile.resumeDownloadUrl),
+      avatarLight: upgradeHttpUrl(clone.profile.avatarLight),
+      avatarDark: upgradeHttpUrl(clone.profile.avatarDark)
+    };
+  }
+  if (Array.isArray(clone.projects)) {
+    clone.projects = clone.projects.map(p => ({
+      ...p,
+      image: upgradeHttpUrl(p.image),
+      demo: upgradeHttpUrl(p.demo),
+      github: upgradeHttpUrl(p.github)
+    }));
+  }
+  return clone;
+};
+
 const initialDefaultData = {
   profile: {
     name: "Datta Dhongade",
@@ -398,6 +429,8 @@ export const PortfolioProvider = ({ children }) => {
     verifySession();
   }, []);
 
+
+
   const loginAdmin = (token, user) => {
     if (token) localStorage.setItem('admin_token', token);
     setIsAdminAuthenticated(true);
@@ -418,7 +451,7 @@ export const PortfolioProvider = ({ children }) => {
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data && Object.keys(json.data).length > 0) {
-            const backendData = json.data;
+            const backendData = sanitizePortfolioUrls(json.data);
 
             // Normalize skills: if any category values are strings/corrupt, fall back to initialDefaultData skills
             let skills = backendData.skills || {};
@@ -442,14 +475,14 @@ export const PortfolioProvider = ({ children }) => {
           // Backend failed — try localStorage fallback
           try {
             const saved = localStorage.getItem('portfolio_master_data_v3');
-            if (saved) setData(JSON.parse(saved));
+            if (saved) setData(sanitizePortfolioUrls(JSON.parse(saved)));
           } catch (e) { /* ignore */ }
         }
       } catch (err) {
         console.warn('Backend API not reachable, running in offline/localStorage mode', err);
         try {
           const saved = localStorage.getItem('portfolio_master_data_v3');
-          if (saved) setData(JSON.parse(saved));
+          if (saved) setData(sanitizePortfolioUrls(JSON.parse(saved)));
         } catch (e) { /* ignore */ }
       } finally {
         setDataLoaded(true);
@@ -511,7 +544,7 @@ export const PortfolioProvider = ({ children }) => {
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.url) {
-          return json.url;
+          return upgradeHttpUrl(json.url);
         }
       }
     } catch (err) {

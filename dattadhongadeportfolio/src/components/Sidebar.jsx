@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, FileText, ExternalLink, Download, Mail, Sun, Moon, X, Code2, MapPin, Send, Shield, Globe, Play } from "lucide-react";
@@ -13,6 +13,75 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
   const { profile, educations, education, skills, experiences } = usePortfolio();
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [pdfViewerUrl, setPdfViewerUrl] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowPdfViewer(false);
+      }
+    };
+    if (showPdfViewer) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showPdfViewer]);
+
+  const handleDownloadResume = async (e) => {
+    if (e) e.preventDefault();
+    const url = pdfViewerUrl || formatExternalUrl(profile?.resumeDownloadUrl);
+    if (!url || url === "#download") {
+      window.print();
+      return;
+    }
+
+    setIsDownloading(true);
+    const filename = profile?.name
+      ? `${profile.name.replace(/\s+/g, "_")}_Resume.pdf`
+      : "Resume.pdf";
+
+    try {
+      if (url.startsWith("blob:") || url.startsWith("data:")) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setIsDownloading(false);
+        return;
+      }
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Direct fetch failed");
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      const link = document.createElement("a");
+      link.href = url.includes("?") ? `${url}&download=true` : `${url}?download=true`;
+      link.download = filename;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const getSocialIcon = (name) => {
     switch ((name || "").toLowerCase()) {
@@ -46,53 +115,26 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
 
   const formatExternalUrl = (url) => {
     if (!url) return "";
-    const trimmed = String(url).trim();
+    let trimmed = String(url).trim();
     if (!trimmed || trimmed === "#") return "";
+    if (trimmed.startsWith("http://") && !trimmed.includes("localhost") && !trimmed.includes("127.0.0.1")) {
+      trimmed = trimmed.replace(/^http:\/\//i, "https://");
+    }
     if (/^(https?:\/\/|mailto:|tel:)/i.test(trimmed)) {
       return trimmed;
     }
     return `https://${trimmed}`;
   };
 
-  const handleResumeClick = async (e) => {
+  const handleResumeClick = (e) => {
     if (e) e.preventDefault();
     setIsSidebarOpen(false);
     const resumeUrl = profile?.resumeDownloadUrl;
 
     if (resumeUrl && resumeUrl !== "#download" && resumeUrl.trim() !== "") {
-      if (resumeUrl.startsWith("data:application/pdf")) {
-        try {
-          const base64Data = resumeUrl.split(",")[1];
-          const byteCharacters = atob(base64Data);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: "application/pdf" });
-          const blobUrl = URL.createObjectURL(blob);
-          setPdfViewerUrl(blobUrl);
-        } catch (err) {
-          setPdfViewerUrl(resumeUrl);
-        }
-        setShowPdfViewer(true);
-      } else {
-        const fullUrl = formatExternalUrl(resumeUrl);
-        try {
-          const res = await fetch(fullUrl);
-          if (res.ok) {
-            const blob = await res.blob();
-            const pdfBlob = new Blob([blob], { type: "application/pdf" });
-            const blobUrl = URL.createObjectURL(pdfBlob);
-            setPdfViewerUrl(blobUrl);
-          } else {
-            setPdfViewerUrl(fullUrl);
-          }
-        } catch (err) {
-          setPdfViewerUrl(fullUrl);
-        }
-        setShowPdfViewer(true);
-      }
+      const fullUrl = formatExternalUrl(resumeUrl);
+      setPdfViewerUrl(fullUrl);
+      setShowPdfViewer(true);
     } else {
       setPdfViewerUrl("");
       setShowPdfViewer(true);
@@ -250,93 +292,71 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
       {/* Fullscreen Interactive Resume Viewer Modal (Always opens on View Resume) */}
       {showPdfViewer && createPortal(
         <div 
-          className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200"
+          className="fixed inset-0 z-9999 bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-2 sm:p-5 animate-in fade-in duration-200"
           onClick={() => setShowPdfViewer(false)}
         >
           <div 
-            className="glass-card w-full max-w-5xl h-[90vh] rounded-2xl p-4 sm:p-6 flex flex-col border border-slate-200/80 dark:border-white/10 shadow-2xl relative"
+            className="glass-card w-full max-w-5xl h-[94vh] sm:h-[90vh] rounded-2xl p-2.5 sm:p-5 flex flex-col border border-slate-200/80 dark:border-white/10 shadow-2xl relative overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 pb-3 mb-3 shrink-0">
-              <div className="flex items-center gap-2">
-                <FileText className="text-cyan-500" size={18} />
-                <h3 className="text-sm sm:text-base font-bold text-black dark:text-white truncate">
-                  {profile?.name ? `${profile.name} — Resume Document` : 'Resume Document'}
+            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 pb-2.5 sm:pb-3 mb-2 shrink-0 gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <FileText className="text-cyan-500 shrink-0" size={18} />
+                <h3 className="text-xs sm:text-base font-bold text-black dark:text-white truncate">
+                  {profile?.name ? `${profile.name} — Resume` : 'Resume Document'}
                 </h3>
               </div>
-              <div className="flex items-center gap-2">
-                {pdfViewerUrl ? (
-                  <>
-                    <a
-                      href={pdfViewerUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-black dark:text-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold"
-                      title="Open in new window tab"
-                    >
-                      <ExternalLink size={13} />
-                      <span className="hidden sm:inline">New Tab</span>
-                    </a>
-                    <a
-                      href={pdfViewerUrl}
-                      download={profile?.name ? `${profile.name.replace(/\s+/g, '_')}_Resume.pdf` : 'Resume.pdf'}
-                      className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-xs"
-                      title="Download copy"
-                    >
-                      <Download size={13} />
-                      <span className="hidden sm:inline">Download PDF</span>
-                    </a>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => window.print()}
-                    className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-xs cursor-pointer"
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                {pdfViewerUrl && (
+                  <a
+                    href={pdfViewerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-black dark:text-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold shrink-0"
+                    title="Open in new window tab"
+                    aria-label="Open in new window tab"
                   >
-                    <Download size={13} />
-                    <span>Print / Save</span>
-                  </button>
+                    <ExternalLink size={14} />
+                    <span className="hidden sm:inline">New Tab</span>
+                  </a>
                 )}
+                
                 <button
+                  type="button"
+                  onClick={handleDownloadResume}
+                  disabled={isDownloading}
+                  className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 disabled:opacity-75 text-white transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-xs shrink-0 cursor-pointer"
+                  title="Direct download PDF file"
+                  aria-label="Direct download PDF file"
+                >
+                  <Download size={14} className={isDownloading ? "animate-bounce" : ""} />
+                  <span className="hidden sm:inline">{isDownloading ? "Downloading..." : "Download PDF"}</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setShowPdfViewer(false)}
-                  className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer ml-1"
-                  title="Close viewer"
+                  className="p-1.5 sm:p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 border border-rose-200/50 dark:border-rose-500/30 transition-all cursor-pointer shrink-0 flex items-center justify-center shadow-2xs"
+                  title="Close resume viewer"
+                  aria-label="Close resume viewer"
                 >
                   <X size={16} />
                 </button>
               </div>
             </div>
 
-            {/* Modal Body */}
+            {/* Modal Body: Direct Mobile & Desktop Google Viewer */}
             {pdfViewerUrl ? (
-              <div className="flex-1 w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-white/10 relative">
-                <object
-                  data={pdfViewerUrl}
-                  type="application/pdf"
-                  className="w-full h-full rounded-xl"
-                >
-                  <iframe
-                    src={`${pdfViewerUrl}#toolbar=1&view=FitH`}
-                    className="w-full h-full border-none rounded-xl"
-                    title="Resume PDF Document Viewer"
-                  >
-                    <div className="flex flex-col items-center justify-center h-full p-6 text-center space-y-3">
-                      <FileText size={40} className="text-cyan-500" />
-                      <p className="text-sm font-semibold text-white">Your browser could not preview this PDF inline.</p>
-                      <a
-                        href={pdfViewerUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold"
-                      >
-                        Open PDF in New Window
-                      </a>
-                    </div>
-                  </iframe>
-                </object>
+              <div className="flex-1 w-full rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 relative min-h-0">
+                <iframe
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfViewerUrl)}&embedded=true`}
+                  className="w-full h-full border-none rounded-xl bg-white"
+                  title="Resume Document Viewer"
+                />
               </div>
             ) : (
-              <div className="flex-1 w-full rounded-xl overflow-y-auto p-6 sm:p-8 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 space-y-6 text-black dark:text-white">
+              <div className="flex-1 w-full rounded-xl overflow-y-auto p-4 sm:p-8 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 space-y-6 text-black dark:text-white min-h-0">
                 {/* Header Profile */}
                 <div className="border-b border-slate-200 dark:border-white/10 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
@@ -395,6 +415,29 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
                 )}
               </div>
             )}
+
+            {/* Mobile Bottom Bar for Easy Tap to Close */}
+            <div className="sm:hidden pt-2 mt-1.5 border-t border-slate-200/80 dark:border-white/10 flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowPdfViewer(false)}
+                className="flex-1 py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-semibold text-xs flex items-center justify-center gap-1.5 border border-rose-200/50 dark:border-rose-500/20 transition-colors cursor-pointer"
+              >
+                <X size={14} />
+                <span>Close Resume</span>
+              </button>
+              {pdfViewerUrl && (
+                <button
+                  type="button"
+                  onClick={handleDownloadResume}
+                  disabled={isDownloading}
+                  className="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <Download size={13} className={isDownloading ? "animate-bounce" : ""} />
+                  <span>{isDownloading ? "Downloading..." : "Download"}</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>,
         document.body
