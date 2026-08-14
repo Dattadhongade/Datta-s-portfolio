@@ -5,7 +5,9 @@ import { Eye, FileText, ExternalLink, Download, Mail, Sun, Moon, X, Code2, MapPi
 import { FaGithub, FaLinkedin, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import { SiLeetcode } from "react-icons/si";
 import { usePortfolio } from "../context/PortfolioContext";
+import ActualPdfViewer from "./ActualPdfViewer";
 import heroDark from "../assets/hero.png";
+
 import heroLight from "../assets/hero.png";
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onReplayIntro }) => {
@@ -41,11 +43,25 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
       return;
     }
 
-    setIsDownloading(true);
     const filename = profile?.name
       ? `${profile.name.replace(/\s+/g, "_")}_Resume.pdf`
       : "Resume.pdf";
 
+    // Cloudinary direct download
+    if (url.includes("res.cloudinary.com")) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
+
+    setIsDownloading(true);
     try {
       if (url.startsWith("blob:") || url.startsWith("data:")) {
         const link = document.createElement("a");
@@ -82,6 +98,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
       setIsDownloading(false);
     }
   };
+
 
   const getSocialIcon = (name) => {
     switch ((name || "").toLowerCase()) {
@@ -126,20 +143,28 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
     return `https://${trimmed}`;
   };
 
+  const [pdfLoadError, setPdfLoadError] = useState(false);
+  const [resumeViewMode, setResumeViewMode] = useState("document"); // "document" | "profile"
+
   const handleResumeClick = (e) => {
     if (e) e.preventDefault();
     setIsSidebarOpen(false);
+    setPdfLoadError(false);
     const resumeUrl = profile?.resumeDownloadUrl;
 
     if (resumeUrl && resumeUrl !== "#download" && resumeUrl.trim() !== "") {
       const fullUrl = formatExternalUrl(resumeUrl);
       setPdfViewerUrl(fullUrl);
+      setResumeViewMode("document");
       setShowPdfViewer(true);
     } else {
       setPdfViewerUrl("");
+      setResumeViewMode("profile");
       setShowPdfViewer(true);
     }
   };
+
+
 
   return (
     <>
@@ -300,21 +325,49 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 pb-2.5 sm:pb-3 mb-2 shrink-0 gap-2">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 pb-2.5 sm:pb-3 mb-2 shrink-0 gap-2 flex-wrap">
+              <div className="flex items-center gap-2 min-w-0">
                 <FileText className="text-cyan-500 shrink-0" size={18} />
                 <h3 className="text-xs sm:text-base font-bold text-black dark:text-white truncate">
                   {profile?.name ? `${profile.name} — Resume` : 'Resume Document'}
                 </h3>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap">
+                {pdfViewerUrl && (
+                  <div className="flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-xs font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setResumeViewMode("document")}
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                        resumeViewMode === "document"
+                          ? "bg-white dark:bg-cyan-500/25 text-black dark:text-cyan-300 font-bold shadow-xs"
+                          : "text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
+                      }`}
+                    >
+                      PDF
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setResumeViewMode("profile")}
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                        resumeViewMode === "profile"
+                          ? "bg-white dark:bg-cyan-500/25 text-black dark:text-cyan-300 font-bold shadow-xs"
+                          : "text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white"
+                      }`}
+                    >
+                      Interactive
+                    </button>
+                  </div>
+                )}
+
                 {pdfViewerUrl && (
                   <a
                     href={pdfViewerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-black dark:text-slate-200 transition-colors flex items-center gap-1.5 text-xs font-semibold shrink-0"
-                    title="Open in new window tab"
+                    title="Open original PDF in new tab"
                     aria-label="Open in new window tab"
                   >
                     <ExternalLink size={14} />
@@ -346,16 +399,15 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, isDarkMode, toggleTheme, onR
               </div>
             </div>
 
-            {/* Modal Body: Direct Mobile & Desktop Google Viewer */}
-            {pdfViewerUrl ? (
-              <div className="flex-1 w-full rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 relative min-h-0">
-                <iframe
-                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(pdfViewerUrl)}&embedded=true`}
-                  className="w-full h-full border-none rounded-xl bg-white"
-                  title="Resume Document Viewer"
-                />
+            {/* Modal Body: Actual Uploaded PDF Document (PDF.js) & Interactive Profile View */}
+            {pdfViewerUrl && resumeViewMode === "document" ? (
+              <div className="flex-1 w-full rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 relative min-h-0">
+                <ActualPdfViewer pdfUrl={pdfViewerUrl} />
               </div>
             ) : (
+
+
+
               <div className="flex-1 w-full rounded-xl overflow-y-auto p-4 sm:p-8 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 space-y-6 text-black dark:text-white min-h-0">
                 {/* Header Profile */}
                 <div className="border-b border-slate-200 dark:border-white/10 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">

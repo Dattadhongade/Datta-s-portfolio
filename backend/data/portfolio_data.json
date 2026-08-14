@@ -6,7 +6,8 @@
     "bioParagraph1": "Hello! I'm Datta Dhongade, a Full Stack Software Engineer based in Nashik, India. I specialize in building robust, performant web applications with clean frontend user interfaces and scalable backend architectures using React.js, Node.js, Express.js, MongoDB, and MySQL.",
     "bioParagraph2": "Currently working at Integral Development Corp., I have contributed to production-level features including Passkey / WebAuthn authentication, GraphQL APIs, background cron workflows, and system monitoring telemetry.",
     "available": true,
-    "resumeDownloadUrl": "http://localhost:5000/uploads/1786569905833-Dattatray_Dhongade_r.pdf",
+    "resumeDownloadUrl": "https://res.cloudinary.com/kpo05ljt/image/upload/v1786697014/datta_portfolio/file_uaz8ph.pdf",
+
     "socialLinks": [
       {
         "name": "GitHub",

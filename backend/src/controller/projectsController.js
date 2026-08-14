@@ -70,10 +70,9 @@ const uploadToCloudinary = (fileBuffer, originalname) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: CLOUDINARY_FOLDER,
-        resource_type: 'auto',
+        resource_type: isPdf ? 'raw' : 'auto',
         use_filename: true,
-        unique_filename: true,
-        format: isPdf ? 'pdf' : undefined
+        unique_filename: true
       },
       (error, result) => {
         if (error) return reject(error);
@@ -83,6 +82,7 @@ const uploadToCloudinary = (fileBuffer, originalname) => {
     Readable.from(fileBuffer).pipe(uploadStream);
   });
 };
+
 
 // UPLOAD project image or document (100% Cloudinary)
 exports.uploadImage = async (req, res) => {
