@@ -525,38 +525,28 @@ export const PortfolioProvider = ({ children }) => {
     return () => clearTimeout(timeout);
   }, [data, dataLoaded]);
 
-  // Image Upload Method (Direct File -> Multipart or Base64 fallback)
+  // Image / PDF Upload Method via Cloudinary
   const uploadImage = async (file) => {
-    try {
-      const token = localStorage.getItem('admin_token');
-      const formData = new FormData();
-      formData.append('image', file);
-      const headers = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`${API_BASE_URL}/upload`, {
-        method: 'POST',
-        headers,
-        body: formData
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.url) {
-          return upgradeHttpUrl(json.url);
-        }
-      }
-    } catch (err) {
-      console.warn("Backend upload failed, falling back to base64", err);
+    const token = localStorage.getItem('admin_token');
+    const formData = new FormData();
+    formData.append('image', file);
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Fallback: FileReader Base64
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(file);
+    const res = await fetch(`${API_BASE_URL}/upload`, {
+      method: 'POST',
+      headers,
+      body: formData
     });
+
+    const json = await res.json().catch(() => ({}));
+    if (res.ok && json.success && json.url) {
+      return upgradeHttpUrl(json.url);
+    }
+
+    throw new Error(json.error || json.message || 'File upload to Cloudinary failed. Check Cloudinary settings in backend.');
   };
 
   // Contact Form Submission Method

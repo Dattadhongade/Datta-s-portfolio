@@ -248,10 +248,6 @@ export default function Contact() {
 
         {/* Action Button */}
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-black dark:text-slate-400 font-medium">
-            🔒 Direct transmission to Datta's workspace inbox.
-          </p>
-
           <button
             type="submit"
             disabled={loading}

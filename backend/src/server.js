@@ -21,12 +21,6 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
-// Ensure upload directory exists
-const uploadDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 // Security & Standard Middleware
 app.use(cors({ origin: '*' }));
 app.use(
@@ -41,6 +35,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Clean NoSQL Injection protection helper
+
 function sanitizeNoSQL(obj) {
   if (obj && typeof obj === 'object') {
     for (const key in obj) {
@@ -60,17 +55,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static uploads serving with iframe and CORS headers for inline PDF viewing
-app.use(
-  '/uploads',
-  (req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.removeHeader('X-Frame-Options');
-    next();
-  },
-  express.static(uploadDir)
-);
 
 // Mount API Routes
 app.use('/api/auth', authRoutes);
