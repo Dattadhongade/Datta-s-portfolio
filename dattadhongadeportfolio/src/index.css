@@ -384,3 +384,35 @@ html:not(.dark) .ambient-mesh {
 .animate-float-subtle {
   animation: floatSubtle 6s ease-in-out infinite;
 }
+
+/* Skeleton Loading & Shimmer Animation */
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.09) 37%,
+    rgba(255, 255, 255, 0.03) 63%
+  );
+  background-size: 300% 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}
+
+html:not(.dark) .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(226, 232, 240, 0.65) 25%,
+    rgba(241, 245, 249, 0.95) 37%,
+    rgba(226, 232, 240, 0.65) 63%
+  );
+  background-size: 300% 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+}

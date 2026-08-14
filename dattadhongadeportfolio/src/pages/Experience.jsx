@@ -1,10 +1,16 @@
 import React from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
+import { ExperienceSkeleton } from '../components/SkeletonLoader';
 
 export const Experience = () => {
-  const { experiences } = usePortfolio();
+  const { experiences, dataLoaded } = usePortfolio();
+
+  if (!dataLoaded) {
+    return <ExperienceSkeleton />;
+  }
 
   return (
+
     <div className="w-full max-w-5xl mx-auto space-y-4 animate-in fade-in duration-500">
       {/* total experience badge */}
       <div className="flex justify-center w-full">

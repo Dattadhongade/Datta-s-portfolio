@@ -1044,6 +1044,8 @@ export const PortfolioProvider = ({ children }) => {
 
   const contextValue = useMemo(() => ({
     ...data,
+    dataLoaded,
+    isLoading: !dataLoaded,
     backendConnected,
     isAdminAuthenticated,
     adminUser,
@@ -1098,7 +1100,7 @@ export const PortfolioProvider = ({ children }) => {
     updateMessageRemark,
     deleteMessage,
     resetToDefaults
-  }), [data, backendConnected, isAdminAuthenticated, adminUser, isCheckingAuth]);
+  }), [data, dataLoaded, backendConnected, isAdminAuthenticated, adminUser, isCheckingAuth]);
 
   return (
     <PortfolioContext.Provider value={contextValue}>

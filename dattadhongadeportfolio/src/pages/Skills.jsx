@@ -6,6 +6,8 @@ import {
 } from "lucide-react";
 import { usePortfolio } from "../context/PortfolioContext";
 import TechIcon from "../components/TechIcon";
+import { SkillsSkeleton } from "../components/SkeletonLoader";
+
 
 const getCategoryIcon = (category) => {
   const norm = (category || "").toLowerCase();
@@ -26,11 +28,17 @@ const getCategoryIcon = (category) => {
 };
 
 const Skills = () => {
-  const { skills, certifications } = usePortfolio();
+  const { skills, certifications, dataLoaded } = usePortfolio();
+
+  if (!dataLoaded) {
+    return <SkillsSkeleton />;
+  }
+
   const skillCategories = Object.keys(skills || {});
   const [activeCategory, setActiveCategory] = useState(skillCategories[0] || "Frontend");
   const currentCategoryKey = skills[activeCategory] ? activeCategory : skillCategories[0] || "Frontend";
   const activeSkillsList = skills[currentCategoryKey] || [];
+
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">

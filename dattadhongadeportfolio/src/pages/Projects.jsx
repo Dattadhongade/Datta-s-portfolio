@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { ExternalLink, Filter, X, CheckCircle2, ArrowRight } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { usePortfolio } from "../context/PortfolioContext";
+import { ProjectsSkeleton } from "../components/SkeletonLoader";
 
 const formatExternalUrl = (url) => {
   if (!url) return "";
@@ -18,11 +19,16 @@ const formatExternalUrl = (url) => {
 };
 
 const Projects = () => {
-  const { projects, projectCategories } = usePortfolio();
+  const { projects, projectCategories, dataLoaded } = usePortfolio();
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedProject, setSelectedProject] = useState(null);
 
+  if (!dataLoaded) {
+    return <ProjectsSkeleton />;
+  }
+
   const categories = projectCategories || ["All", "Full Stack", "AI / SaaS", "Frontend", "Extensions"];
+
 
   const filteredProjects = activeCategory === "All" 
     ? projects 

@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { usePortfolio } from '../context/PortfolioContext';
+import { AboutSkeleton } from './SkeletonLoader';
 
 const getCapabilityIcon = (iconName, colorClass, title = "") => {
   const normIcon = (iconName || "").toLowerCase();
@@ -111,9 +112,14 @@ const getLifestyleIcon = (iconName) => {
 };
 
 const About = () => {
-  const { profile, stats, capabilities, lifestyle } = usePortfolio();
+  const { profile, stats, capabilities, lifestyle, dataLoaded } = usePortfolio();
+
+  if (!dataLoaded) {
+    return <AboutSkeleton />;
+  }
 
   return (
+
     <div className="w-full max-w-5xl mx-auto space-y-4 animate-page-entrance">
       {/* Centered Top Badge */}
       {/* <div className="flex justify-center w-full">

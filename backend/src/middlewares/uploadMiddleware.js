@@ -1,25 +1,8 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 
-// Ensure root uploads directory exists
-const uploadDir = path.join(__dirname, '..', '..', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer Storage Configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const cleanFilename = file.originalname.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
-    const uniqueName = `${Date.now()}-${cleanFilename}${ext}`;
-    cb(null, uniqueName);
-  }
-});
+// Memory storage allows direct stream upload to Cloudinary or disk fallback
+const storage = multer.memoryStorage();
 
 // File Filter: Accept images and PDF documents
 const fileFilter = (req, file, cb) => {
@@ -36,7 +19,8 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 15 * 1024 * 1024 } // 15MB max file size
+  limits: { fileSize: 25 * 1024 * 1024 } // 25MB max file size
 });
 
 module.exports = upload;
+

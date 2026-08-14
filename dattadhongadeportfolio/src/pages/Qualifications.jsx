@@ -1,15 +1,22 @@
 import React from "react";
 import { GraduationCap } from "lucide-react";
 import { usePortfolio } from "../context/PortfolioContext";
+import { QualificationsSkeleton } from "../components/SkeletonLoader";
 
 const Qualifications = () => {
-  const { educations, education } = usePortfolio();
+  const { educations, education, dataLoaded } = usePortfolio();
+
+  if (!dataLoaded) {
+    return <QualificationsSkeleton />;
+  }
+
   const educationList =
     educations && educations.length > 0
       ? educations
       : education
       ? [education]
       : [];
+
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-3 sm:space-y-4 animate-in fade-in duration-500">
